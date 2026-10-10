@@ -1,6 +1,6 @@
 # Calcumeter
 
-Wissenschaftlicher Taschenrechner als Web-App – ohne Abhängigkeiten, offline-fähig und installierbar (PWA).
+Taschenrechner mit wissenschaftlichen Funktionen und Währungsrechner als Web-App – ohne Abhängigkeiten, offline-fähig und installierbar (PWA).
 
 Rechnen und installieren: **https://almaz6380.github.io/Calcumeter/**
 
@@ -14,6 +14,11 @@ npm test           # führt die Tests des Rechenkerns aus
 ```
 
 Alternativ `index.html` einfach im Browser öffnen.
+
+## Bedienung
+
+- **Rechner**: Zuerst sind nur die Grundrechenarten zu sehen. Die wissenschaftlichen Tasten blendet der Knopf **f(x)** ein (Tastatur: Umschalt+S); auf dem Handy erscheinen sie automatisch im Querformat.
+- **Währung**: Umrechnung zwischen rund 160 Währungen mit Tageskursen (ExchangeRate-API, ersatzweise EZB). Ohne Netz gelten die zuletzt geladenen bzw. eingebauten EZB-Kurse. Im Betrag sind Rechnungen erlaubt (`49,90*3`); Ergebnisse lassen sich zwischen Rechner und Währungsrechner übernehmen.
 
 ## Funktionen
 
@@ -39,12 +44,14 @@ Alternativ `index.html` einfach im Browser öffnen.
 | `Backspace` | Letztes Zeichen bzw. Funktion löschen |
 | `Esc` / `Entf` | Alles löschen |
 | `Umschalt+H` | Verlauf ein-/ausblenden |
+| `Umschalt+S` | Wissenschaftliche Funktionen ein-/ausblenden |
 | Buchstaben | Funktionen direkt tippen, z. B. `sqrt(2)`, `sin(30)`, `gcd(12,18)` |
 
 ## Aufbau
 
 - `calculator.js` – Rechenkern: Tokenizer, Parser (rekursiver Abstieg, kein `eval`) und Auswertung
 - `app.js` – Bedienung, Anzeige, Speicher, Verlauf, Tastatur
+- `currency.js` – Währungsrechner: Kurse laden und zwischenspeichern, Umrechnung
 - `index.html`, `style.css` – Oberfläche
 - `sw.js`, `manifest.webmanifest`, `icon.svg` – Offline-Betrieb und Installation
 - `test/` – Tests mit dem eingebauten Node-Testrunner

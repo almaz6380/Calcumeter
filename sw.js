@@ -1,6 +1,6 @@
 /* Offline-Unterstützung: Netzwerk zuerst, Cache als Rückfall. */
-const CACHE = 'calcumeter-v1';
-const ASSETS = ['./', 'index.html', 'style.css', 'calculator.js', 'app.js', 'icon.svg', 'manifest.webmanifest'];
+const CACHE = 'calcumeter-v2';
+const ASSETS = ['./', 'index.html', 'style.css', 'calculator.js', 'currency.js', 'app.js', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -15,7 +15,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
+  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     fetch(e.request)
       .then((res) => {

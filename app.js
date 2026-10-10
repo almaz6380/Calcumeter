@@ -17,7 +17,12 @@
     memory: null,
     ans: 0,
     history: [],
+    view: 'calc',
+    sciOverride: null, // null = automatisch (Querformat), sonst vom Nutzer gewählt
   };
+
+  // Im Querformat auf Handy/Tablet werden die wissenschaftlichen Tasten automatisch eingeblendet.
+  const landscape = window.matchMedia('(orientation: landscape) and (max-height: 600px)');
 
   const $ = (sel) => document.querySelector(sel);
   const els = {
@@ -32,6 +37,11 @@
     historyEmpty: $('#history-empty'),
     historyToggle: $('[data-action="toggle-history"]'),
     toast: $('#toast'),
+    calculator: $('.calculator'),
+    sciToggle: $('[data-action="toggle-sci"]'),
+    calcActions: $('#calc-actions'),
+    viewCalc: $('#view-calc'),
+    viewFx: $('#view-fx'),
   };
 
   // ---------- Persistenz (optional, schlägt still fehl) ----------
@@ -44,13 +54,14 @@
       if (typeof saved.memory === 'number') state.memory = saved.memory;
       if (typeof saved.ans === 'number') state.ans = saved.ans;
       if (Array.isArray(saved.history)) state.history = saved.history.slice(0, HISTORY_LIMIT);
+      if (saved.view === 'fx') state.view = 'fx';
     } catch (_) { /* ohne Speicher weiterarbeiten */ }
   }
 
   function save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        angle: state.angle, memory: state.memory, ans: state.ans, history: state.history,
+        angle: state.angle, memory: state.memory, ans: state.ans, history: state.history, view: state.view,
       }));
     } catch (_) { /* ignorieren */ }
   }
@@ -217,6 +228,31 @@
     render();
   }
 
+  const sciVisible = () => (state.sciOverride === null ? landscape.matches : state.sciOverride);
+
+  function toggleSci() {
+    state.sciOverride = !sciVisible();
+    if (!state.sciOverride) {
+      state.second = false;
+      state.hyp = false;
+    }
+    render();
+  }
+
+  function setView(view) {
+    state.view = view;
+    const fx = view === 'fx';
+    els.viewCalc.hidden = fx;
+    els.viewFx.hidden = !fx;
+    els.calcActions.hidden = fx;
+    if (fx) toggleHistory(false);
+    document.querySelectorAll('[data-view]').forEach((b) => {
+      b.setAttribute('aria-selected', String(b.dataset.view === view));
+    });
+    if (fx && fxView) fxView.show();
+    save();
+  }
+
   function toggleHistory(force) {
     const show = typeof force === 'boolean' ? force : els.history.hidden;
     els.history.hidden = !show;
@@ -273,6 +309,10 @@
     r.scrollLeft = r.scrollWidth;
 
     // Anzeigen und Umschalter
+    const sci = sciVisible();
+    els.calculator.classList.toggle('sci-on', sci);
+    els.sciToggle.setAttribute('aria-pressed', String(sci));
+    els.sciToggle.setAttribute('aria-label', sci ? 'Wissenschaftliche Funktionen ausblenden' : 'Wissenschaftliche Funktionen einblenden');
     els.indMode.textContent = state.angle.toUpperCase();
     els.ind2nd.hidden = !state.second;
     els.indHyp.hidden = !state.hyp;
@@ -335,6 +375,7 @@
       case '2nd': state.second = !state.second; render(); break;
       case 'hyp': state.hyp = !state.hyp; render(); break;
       case 'toggle-history': toggleHistory(); break;
+      case 'toggle-sci': toggleSci(); break;
       case 'clear-history':
         state.history = [];
         save();
@@ -352,6 +393,7 @@
     if (btn.dataset.insert !== undefined) insert(btn.dataset.insert);
     else if (btn.dataset.trig) insertTrig(btn.dataset.trig);
     else if (btn.dataset.angle) setAngle(btn.dataset.angle);
+    else if (btn.dataset.view) setView(btn.dataset.view);
     else if (btn.dataset.action) handleAction(btn.dataset.action);
     else if (btn.dataset.historyIndex !== undefined) useHistory(Number(btn.dataset.historyIndex), e.shiftKey);
     else if (btn === els.result) copyResult();
@@ -370,6 +412,7 @@
   }
 
   document.addEventListener('keydown', (e) => {
+    if (state.view !== 'calc' || e.target.closest('input, select, textarea')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !window.getSelection().toString()) copyResult();
       return;
@@ -392,6 +435,8 @@
       flash('[data-action="clear"]');
     } else if (k === 'H' && e.shiftKey) {
       toggleHistory();
+    } else if (k === 'S' && e.shiftKey) {
+      toggleSci();
     } else if (/^[a-zA-Z]$/.test(k)) {
       // Funktionsnamen direkt tippen, z. B. "sqrt(2)"
       insert(k);
@@ -403,10 +448,27 @@
 
   // ---------- Start ----------
 
+  landscape.addEventListener('change', () => {
+    state.sciOverride = null;
+    render();
+  });
+
+  let fxView = null;
+  if (window.Fx) {
+    fxView = window.Fx.init({
+      getAns: () => state.ans,
+      useInCalc: (value) => {
+        setView('calc');
+        insert(format(value).replace(/^-(.*)$/, '(−$1)'));
+      },
+    });
+  }
+
   load();
   render();
   renderHistory();
-  if (window.matchMedia('(min-width: 981px)').matches && state.history.length) toggleHistory(true);
+  setView(state.view);
+  if (state.view === 'calc' && window.matchMedia('(min-width: 981px)').matches && state.history.length) toggleHistory(true);
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});

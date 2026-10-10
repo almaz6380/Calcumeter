@@ -111,9 +111,18 @@ button:focus-visible,
   padding: 24px 16px;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .calculator {
   width: 100%;
-  max-width: 760px;
+  max-width: 420px;
   background: var(--surface);
   border-radius: 22px;
   box-shadow: var(--shadow);
@@ -138,6 +147,18 @@ button:focus-visible,
 }
 
 .topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar-actions[hidden] { display: none; }
+
+.tabs button { font-size: .85rem; padding: 7px 14px; }
+
+.sci-btn { font-size: .8rem; font-weight: 700; font-style: italic; width: auto; padding: 0 10px; }
+.sci-btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+.sci-btn[aria-pressed="true"]:hover { background: var(--accent-hover); color: var(--accent-text); }
+
+/* Basisansicht: wissenschaftliche Tasten erst nach dem Einblenden */
+.calculator:not(.sci-on) .sci-only,
+.calculator:not(.sci-on) .pad.sci { display: none; }
+.calculator.sci-on { max-width: 760px; }
 
 .segmented {
   display: inline-flex;
@@ -154,7 +175,8 @@ button:focus-visible,
   color: var(--muted);
 }
 
-.segmented button[aria-checked="true"] {
+.segmented button[aria-checked="true"],
+.segmented button[aria-selected="true"] {
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
@@ -272,11 +294,13 @@ button:focus-visible,
 
 .pads {
   display: grid;
-  grid-template-columns: 5fr 4fr;
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
-.pad { display: grid; gap: 8px; }
+.sci-on .pads { grid-template-columns: 5fr 4fr; }
+
+.pad { display: grid; gap: 8px; grid-auto-rows: 1fr; }
 .pad.sci { grid-template-columns: repeat(5, 1fr); }
 .pad.num { grid-template-columns: repeat(4, 1fr); }
 
@@ -389,6 +413,153 @@ button:focus-visible,
 
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- Währungsrechner ---------- */
+
+.view[hidden] { display: none; }
+
+.fx { display: flex; flex-direction: column; gap: 12px; }
+
+.fx-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--display);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.fx-field { display: flex; flex-direction: column; gap: 6px; }
+
+.fx-field label {
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.fx-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+#fx-amount, #fx-result {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 1.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: none;
+  border: 0;
+  padding: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+#fx-amount { border-bottom: 2px solid var(--border); border-radius: 0; }
+#fx-amount:focus { outline: none; border-bottom-color: var(--accent); }
+#fx-amount[aria-invalid="true"] { border-bottom-color: var(--error); }
+#fx-result.error { color: var(--muted); }
+
+/* Native Auswahlliste unsichtbar über einer kompakten Anzeige des Währungscodes */
+.fx-select {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.fx-select::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.fx-select:hover { border-color: var(--muted); }
+.fx-select:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.fx-select select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.fx-field label span { text-transform: none; letter-spacing: 0; font-weight: 500; }
+
+.fx-swap {
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-block: -4px;
+  border-radius: 50%;
+  background: var(--op);
+  color: var(--op-text);
+}
+
+.fx-swap:hover { background: var(--op-hover); }
+
+.fx-rate { margin: 0; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+
+.fx-hint { margin: 0; color: var(--muted); font-size: .8rem; }
+.fx-hint code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--text); }
+
+.fx-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+.fx-subhead {
+  margin: 4px 0 0;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.fx-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+
+.fx-list button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.fx-list button:hover { background: var(--key); }
+.fx-code { display: flex; flex-direction: column; min-width: 0; }
+.fx-code small { color: var(--muted); font-size: .78rem; }
+.fx-val { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.fx-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-size: .78rem;
+}
+
 /* ---------- Responsiv ---------- */
 
 @media (max-width: 980px) {
@@ -399,11 +570,32 @@ button:focus-visible,
 @media (max-width: 640px) {
   .app { padding: 12px 16px; }
   .calculator { padding: 12px; border-radius: 18px; }
-  .pads { grid-template-columns: 1fr; gap: 8px; }
+  .pads, .sci-on .pads { grid-template-columns: 1fr; gap: 8px; }
   .pad { gap: 6px; }
   .key { min-height: 44px; }
   .key.fn { min-height: 36px; font-size: .82rem; }
   .display { min-height: 112px; }
+}
+
+/* Querformat auf dem Handy: kompakt, beide Tastenfelder nebeneinander */
+@media (orientation: landscape) and (max-height: 600px) {
+  .app { padding-block: 8px; }
+  .calculator, .calculator.sci-on { max-width: 1000px; padding: 10px 12px; }
+  .topbar { margin-bottom: 6px; }
+  .icon-btn { width: 32px; height: 32px; }
+  .sci-btn { width: auto; }
+  .segmented button { padding: 4px 10px; }
+  .display { min-height: 0; padding: 4px 12px 6px; margin-bottom: 6px; }
+  .expression { font-size: 1rem; padding-top: 0; }
+  .result { font-size: 1.6rem; }
+  .result.error { font-size: 1.1rem; }
+  .memory-row { margin-bottom: 6px; }
+  .memory-row button { padding: 2px 0; font-size: .72rem; }
+  .sci-on .pads { grid-template-columns: 5fr 4fr; gap: 10px; }
+  .pad { gap: 5px; }
+  .key, .key.fn { min-height: 0; height: 100%; padding-block: 6px; font-size: .85rem; }
+  .key.digit, .key.op, .key.equals { font-size: 1.05rem; }
+  .history { max-height: 300px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
