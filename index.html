@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Calcumeter – wissenschaftlicher Taschenrechner">
+  <meta name="theme-color" content="#16181d">
+  <title>Calcumeter</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="calculator" aria-label="Taschenrechner">
+      <header class="topbar">
+        <h1 class="brand">Calcumeter</h1>
+        <div class="topbar-actions">
+          <div class="segmented" role="radiogroup" aria-label="Winkelmaß">
+            <button type="button" role="radio" data-angle="deg" aria-checked="true">DEG</button>
+            <button type="button" role="radio" data-angle="rad" aria-checked="false">RAD</button>
+          </div>
+          <button type="button" class="icon-btn" data-action="toggle-history" aria-label="Verlauf anzeigen" aria-expanded="false" title="Verlauf (Umschalt+H)">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 3"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="display" aria-live="polite">
+        <div class="indicators">
+          <span id="ind-mode">DEG</span>
+          <span id="ind-2nd" hidden>2nd</span>
+          <span id="ind-hyp" hidden>HYP</span>
+          <span id="ind-mem" hidden>M</span>
+        </div>
+        <div class="expression" id="expression" tabindex="0" aria-label="Eingabe"></div>
+        <button type="button" class="result" id="result" title="Klicken zum Kopieren" aria-label="Ergebnis"></button>
+      </div>
+
+      <div class="memory-row" role="group" aria-label="Speicher">
+        <button type="button" data-action="mc" title="Speicher löschen">MC</button>
+        <button type="button" data-action="mr" title="Speicher abrufen">MR</button>
+        <button type="button" data-action="m+" title="Zum Speicher addieren">M+</button>
+        <button type="button" data-action="m-" title="Vom Speicher abziehen">M−</button>
+        <button type="button" data-action="ms" title="Im Speicher ablegen">MS</button>
+      </div>
+
+      <div class="pads">
+        <div class="pad sci" role="group" aria-label="Wissenschaftliche Funktionen">
+          <button type="button" class="key fn toggle" data-action="2nd" aria-pressed="false">2nd</button>
+          <button type="button" class="key fn toggle" data-action="hyp" aria-pressed="false">hyp</button>
+          <button type="button" class="key fn" data-trig="sin">sin</button>
+          <button type="button" class="key fn" data-trig="cos">cos</button>
+          <button type="button" class="key fn" data-trig="tan">tan</button>
+
+          <button type="button" class="key fn" data-insert="²">x²</button>
+          <button type="button" class="key fn" data-insert="³">x³</button>
+          <button type="button" class="key fn" data-insert="^">xʸ</button>
+          <button type="button" class="key fn" data-insert="√(">√x</button>
+          <button type="button" class="key fn" data-insert="∛(">∛x</button>
+
+          <button type="button" class="key fn" data-insert="ln(">ln</button>
+          <button type="button" class="key fn" data-insert="log(">log</button>
+          <button type="button" class="key fn" data-insert="log2(">log₂</button>
+          <button type="button" class="key fn" data-insert="e^">eˣ</button>
+          <button type="button" class="key fn" data-insert="10^">10ˣ</button>
+
+          <button type="button" class="key fn" data-insert="⁻¹">1/x</button>
+          <button type="button" class="key fn" data-insert="!">n!</button>
+          <button type="button" class="key fn" data-insert="abs(">|x|</button>
+          <button type="button" class="key fn" data-insert="nCr">nCr</button>
+          <button type="button" class="key fn" data-insert="nPr">nPr</button>
+
+          <button type="button" class="key fn" data-insert="(">(</button>
+          <button type="button" class="key fn" data-insert=")">)</button>
+          <button type="button" class="key fn" data-insert=",">,</button>
+          <button type="button" class="key fn" data-insert=" mod ">mod</button>
+          <button type="button" class="key fn" data-insert="π">π</button>
+
+          <button type="button" class="key fn" data-insert="e">e</button>
+          <button type="button" class="key fn" data-insert="E" title="Zehnerpotenz (z. B. 3E8)">EXP</button>
+          <button type="button" class="key fn" data-insert="Ans">Ans</button>
+          <button type="button" class="key fn" data-insert="rand">Rand</button>
+          <button type="button" class="key fn" data-insert="round(">rnd</button>
+        </div>
+
+        <div class="pad num" role="group" aria-label="Ziffern und Grundrechenarten">
+          <button type="button" class="key danger" data-action="clear">AC</button>
+          <button type="button" class="key op" data-action="backspace" aria-label="Löschen">⌫</button>
+          <button type="button" class="key op" data-insert="%">%</button>
+          <button type="button" class="key op" data-insert="÷">÷</button>
+
+          <button type="button" class="key digit" data-insert="7">7</button>
+          <button type="button" class="key digit" data-insert="8">8</button>
+          <button type="button" class="key digit" data-insert="9">9</button>
+          <button type="button" class="key op" data-insert="×">×</button>
+
+          <button type="button" class="key digit" data-insert="4">4</button>
+          <button type="button" class="key digit" data-insert="5">5</button>
+          <button type="button" class="key digit" data-insert="6">6</button>
+          <button type="button" class="key op" data-insert="−">−</button>
+
+          <button type="button" class="key digit" data-insert="1">1</button>
+          <button type="button" class="key digit" data-insert="2">2</button>
+          <button type="button" class="key digit" data-insert="3">3</button>
+          <button type="button" class="key op" data-insert="+">+</button>
+
+          <button type="button" class="key digit" data-action="sign" aria-label="Vorzeichen wechseln">±</button>
+          <button type="button" class="key digit" data-insert="0">0</button>
+          <button type="button" class="key digit" data-insert=".">.</button>
+          <button type="button" class="key equals" data-action="equals">=</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="history" id="history" aria-label="Verlauf" hidden>
+      <div class="history-head">
+        <h2>Verlauf</h2>
+        <button type="button" class="text-btn" data-action="clear-history">Leeren</button>
+      </div>
+      <ol class="history-list" id="history-list"></ol>
+      <p class="history-empty" id="history-empty">Noch keine Berechnungen.</p>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="calculator.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
