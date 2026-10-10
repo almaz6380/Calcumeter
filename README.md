@@ -2,6 +2,10 @@
 
 Wissenschaftlicher Taschenrechner als Web-App – ohne Abhängigkeiten, offline-fähig und installierbar (PWA).
 
+Rechnen und installieren: **https://almaz6380.github.io/Calcumeter/**
+
+Veröffentlichen: die App-Dateien auf den Branch `gh-pages` kopieren und pushen.
+
 ## Starten
 
 ```bash
