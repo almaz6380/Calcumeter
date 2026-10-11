@@ -20,7 +20,7 @@
       // iOS: echte IDs aus AdMob
       ios: { banner: 'ca-app-pub-8860791993288062/9282636174', rewarded: 'ca-app-pub-8860791993288062/7294856375' },
     },
-    revenueCatKey: { android: '', ios: '' },   // öffentliche SDK-Keys von app.revenuecat.com (goog_… / appl_…)
+    revenueCatKey: { android: '', ios: 'appl_SPbNAZMgYLGETvdjDqTphLPTTsu' },   // öffentliche SDK-Keys von app.revenuecat.com (goog_… / appl_…)
     noAdsProduct: 'no_ads',
     rewardHours: 24,
   };
