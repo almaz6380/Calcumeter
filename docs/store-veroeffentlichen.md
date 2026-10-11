@@ -21,17 +21,17 @@ https://almaz6380.github.io/ hast du von Mountain-Ride schon – sie gelten auch
 
 ---
 
-## 1. AdMob einrichten
+## 1. AdMob ✔
 
-1. In AdMob **zwei Apps** anlegen: „Calcumeter“ für Android und für iOS (noch nicht im Store → „Nein“).
-2. Pro App **zwei Anzeigenblöcke** anlegen: **Banner** (adaptiv) und **Belohnt** (Rewarded).
-3. Unter **Datenschutz und Mitteilungen** die DSGVO-Mitteilung und (iOS) die IDFA-Erklärung auch für die
-   neuen Apps veröffentlichen.
-4. IDs eintragen (oder mir schicken):
-   - App-IDs (`ca-app-pub-…~…`): Android → `android/app/src/main/res/values/strings.xml` (`admob_app_id`),
-     iOS → `ios/App/App/Info.plist` (`GADApplicationIdentifier`)
-   - Anzeigenblock-IDs (`ca-app-pub-…/…`): in `money.js` bei `MONEY.adUnits`, dort `adsTesting: false` setzen.
-5. Bis dahin zeigt die App **Google-Testanzeigen**.
+Erledigt: Apps „Calcumeter“ (Android und iOS) mit je einem Banner und einem Anzeigenblock „Mit Prämie“ angelegt,
+alle IDs sind eingetragen (`money.js` → `MONEY.adUnits`, Android `strings.xml`, iOS `Info.plist`).
+
+Noch zu tun:
+- Unter **Datenschutz und Mitteilungen** die DSGVO-Mitteilung und die IDFA-Erklärung um die beiden
+  Calcumeter-Apps ergänzen und veröffentlichen.
+- **Direkt vor dem Einreichen** in `money.js` `adsTesting: false` setzen und `npm run sync`. Vorher zeigt die App
+  nur Testanzeigen – bitte nie auf eigene echte Anzeigen tippen, das kann zur Sperre des AdMob-Kontos führen.
+- Nach der Veröffentlichung in AdMob bei beiden Apps „App-Shop-Details hinzufügen“ (Verknüpfung mit dem Store).
 
 ## 2. Kauf „Werbefrei“ einrichten
 
