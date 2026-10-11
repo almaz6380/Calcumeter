@@ -44,6 +44,9 @@
           <span id="view-switch-label">Rechner</span>
           <svg class="chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
         </button>
+        <button type="button" class="icon-btn share-btn" id="share-btn" aria-label="Ergebnis teilen" title="Teilen">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+        </button>
         <div class="topbar-actions" id="calc-actions">
           <div class="seg sci-only" role="radiogroup" aria-label="Winkelmaß">
             <button type="button" role="radio" data-angle="deg" aria-checked="true">DEG</button>
@@ -397,11 +400,13 @@
         <button type="button" class="switch" id="set-vibrate" role="switch" aria-checked="true" aria-labelledby="set-vibrate-label"><span></span></button>
       </div>
       <p class="setting-hint">Tipp: Über die Anzeige wischen löscht die letzte Eingabe, AC lange drücken löscht auch den Speicher.</p>
+      <p class="legal-links"><a href="privacy.html" data-legal>Datenschutz</a><span aria-hidden="true">·</span><a href="imprint.html" data-legal>Impressum</a></p>
     </div>
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="native.js"></script>
   <script src="i18n.js"></script>
   <script src="calculator.js"></script>
   <script src="keypad.js"></script>

@@ -298,6 +298,7 @@
     state.view = view;
     for (const v of Object.keys(VIEWS)) $(`#view-${v}`).hidden = v !== view;
     els.calcActions.hidden = view !== 'calc';
+    $('#share-btn').hidden = !['calc', 'fx', 'units'].includes(view);
     els.fxActions.hidden = view !== 'fx';
     els.viewSwitchLabel.textContent = t(VIEWS[view]);
     els.calculator.dataset.view = view;
@@ -367,6 +368,8 @@
       setView(item.dataset.view);
       return;
     }
+    const legal = e.target.closest('a[data-legal]');
+    if (legal) legal.href = `${legal.getAttribute('href').split('?')[0]}?lang=${I18n.getLang()}`;
     const langBtn = e.target.closest('[data-lang-choice]');
     if (langBtn) {
       const prev = I18n.getLang();
@@ -596,6 +599,28 @@
     render();
   });
 
+  // ---------- Teilen ----------
+
+  const WEB_URL = 'https://almaz6380.github.io/Calcumeter/';
+
+  function calcShareText() {
+    if (state.error || state.expr.trim() === '') return null;
+    if (state.justEvaluated) return `${state.lastExpr} = ${pretty(state.ans)}`;
+    const { value } = tryEvaluate(state.expr);
+    if (value === undefined) return null;
+    return `${state.expr}${')'.repeat(openParens(state.expr))} = ${pretty(value)}`;
+  }
+
+  async function shareCurrent() {
+    const text = state.view === 'calc' ? calcShareText() : modules[state.view] && modules[state.view].shareText && modules[state.view].shareText();
+    if (!text) return;
+    const res = await window.Native.share({ text: `${text}\n– ${t('berechnet mit Calcumeter')}`, url: WEB_URL });
+    if (res === 'copied') toast(t('Kopiert'));
+    else if (res === 'failed') toast(t('Kopieren nicht möglich'));
+  }
+
+  $('#share-btn').addEventListener('click', shareCurrent);
+
   // Gemeinsame Schnittstelle für die Bereiche
   const hub = {
     getAns: () => state.ans,
@@ -626,6 +651,7 @@
 
   // Gesten im Rechner: Wischen über die Anzeige löscht, AC lange drücken löscht alles
   window.Keypad.onSwipe($('#view-calc .display'), backspace);
+  if (window.Native.isApp) window.Keypad.setNativeHaptic(window.Native.haptic);
   window.Keypad.onLongPress($('[data-action="clear"]'), () => {
     clearAll();
     state.memory = null;
@@ -640,6 +666,7 @@
   render();
   renderHistory();
   setView(state.view);
+  window.Native.onOpenView((view) => setView(view));
   if (state.view === 'calc' && window.matchMedia('(min-width: 1100px)').matches) toggleHistory(true);
   window.addEventListener('resize', () => { if (state.view === 'calc') render(); });
   if (document.fonts) document.fonts.ready.then(() => render());

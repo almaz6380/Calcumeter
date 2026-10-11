@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calcumeter</title>
+<link rel="icon" href="icons/favicon-48.png" type="image/png">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<style>
+  :root { --bg: #0E0F11; --card: #18191D; --ink: #F4F4F5; --muted: #8A8B94; --accent: #FFB547; color-scheme: dark; }
+  @media (prefers-color-scheme: light) { :root { --bg: #EFEEEA; --card: #FFFFFF; --ink: #17181B; --muted: #66676E; --accent: #A65F00; color-scheme: light; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 "Geist", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; max-width: 760px; margin: 0 auto; padding: 16px; }
+  header a { color: var(--ink); text-decoration: none; font-weight: 600; }
+  label { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
+  select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--muted); background: var(--card); color: var(--ink); }
+  main { max-width: 760px; margin: 0 auto 24px; padding: 8px 24px 24px; background: var(--card); border-radius: 20px; }
+  @media (max-width: 800px) { main { margin: 0 16px 24px; padding: 8px 18px 20px; } }
+  h1 { font-size: 26px; margin: 16px 0 8px; overflow-wrap: anywhere; }
+  h2 { font-size: 17px; margin: 24px 0 4px; color: var(--accent); }
+  p { margin: 6px 0; white-space: pre-line; overflow-wrap: anywhere; }
+  a { color: var(--accent); }
+  .updated { color: var(--muted); font-size: 14px; margin-top: 20px; }
+  footer { text-align: center; padding: 0 16px 28px; }
+</style>
+</head>
+<body data-page="imprint">
+<header><a id="back" href="./">← Calcumeter</a><label><span id="langLabel">Sprache</span><select id="lang"></select></label></header>
+<main id="main"></main>
+<footer><a id="other" href="#"></a></footer>
+<script src="assets/legal/legal.js"></script>
+<script src="assets/legal/legal-page.js"></script>
+</body>
+</html>

@@ -35,6 +35,10 @@
   const POPULAR = ['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'TRY', 'PLN', 'CNY', 'CAD', 'AUD', 'SEK', 'CZK'];
   const DEFAULT_FAVORITES = ['USD', 'GBP', 'CHF', 'JPY', 'TRY', 'PLN', 'CNY', 'CAD'];
 
+  // Empfehlungslink unter der Favoritenliste (als Anzeige gekennzeichnet).
+  // Solange url leer ist, erscheint nichts.
+  const REFERRAL = { url: '', text: 'Geld ins Ausland senden – oft günstiger als die Bank' };
+
   // ---------- Reine Logik ----------
 
   function convert(amount, from, to, rates) {
@@ -240,7 +244,24 @@
       add.className = 'fx-add';
       add.textContent = t('+ Währung hinzufügen');
       addLi.append(add);
-      el.list.replaceChildren(...rows, addLi);
+      const extra = [addLi];
+      if (REFERRAL.url) {
+        const refLi = document.createElement('li');
+        refLi.className = 'fx-ref';
+        const a = document.createElement('a');
+        a.href = REFERRAL.url;
+        a.target = '_blank';
+        a.rel = 'sponsored noopener noreferrer';
+        const tag = document.createElement('span');
+        tag.className = 'ad-tag';
+        tag.textContent = t('Anzeige');
+        const txt = document.createElement('span');
+        txt.textContent = `${t(REFERRAL.text)} →`;
+        a.append(tag, txt);
+        refLi.append(a);
+        extra.push(refLi);
+      }
+      el.list.replaceChildren(...rows, ...extra);
 
       const when = new Date(data.date);
       const dateText = Number.isNaN(when.getTime()) ? data.date
@@ -375,6 +396,12 @@
       show() {
         refresh(false);
         render();
+      },
+      shareText() {
+        if (lastValue === null) return null;
+        const when = new Date(data.date);
+        const date = Number.isNaN(when.getTime()) ? data.date : when.toLocaleDateString(intl());
+        return `${el.amount.textContent} ${prefs.from} = ${el.result.textContent} ${prefs.to} (${t('Kurs vom {date}', { date })})`;
       },
     };
   }
