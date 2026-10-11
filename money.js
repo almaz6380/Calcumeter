@@ -12,11 +12,13 @@
   'use strict';
 
   const MONEY = {
-    adsTesting: true,
-    // Google-Testanzeigen bis zur Veröffentlichung
+    adsTesting: false,
+    // Solange adsTesting true ist, liefert AdMob nur Testanzeigen – auch mit echten IDs.
     adUnits: {
-      android: { banner: 'ca-app-pub-3940256099942544/9214589741', rewarded: 'ca-app-pub-3940256099942544/5224354917' },
-      ios: { banner: 'ca-app-pub-3940256099942544/2435281174', rewarded: 'ca-app-pub-3940256099942544/1712485313' },
+      // Android: echte IDs aus AdMob
+      android: { banner: 'ca-app-pub-8860791993288062/7534440237', rewarded: 'ca-app-pub-8860791993288062/2282113550' },
+      // iOS: echte IDs aus AdMob
+      ios: { banner: 'ca-app-pub-8860791993288062/9282636174', rewarded: 'ca-app-pub-8860791993288062/7294856375' },
     },
     revenueCatKey: { android: '', ios: '' },   // öffentliche SDK-Keys von app.revenuecat.com (goog_… / appl_…)
     noAdsProduct: 'no_ads',

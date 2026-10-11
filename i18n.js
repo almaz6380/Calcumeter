@@ -1,11 +1,13 @@
 /*
- * Calcumeter – Sprachen (Deutsch, Englisch)
+ * Calcumeter – Sprachen
  *
- * Die Oberfläche ist auf Deutsch geschrieben. Für Englisch übersetzt apply()
+ * Die Oberfläche ist auf Deutsch geschrieben. Für alle anderen Sprachen übersetzt apply()
  * Texte und aria-label/title/placeholder anhand des deutschen Originals;
  * Skripte holen ihre Texte über t('deutscher Text').
- * Zahlen folgen der Sprache: Deutsch 1.234,5 mit ";" zwischen Argumenten,
- * Englisch 1,234.5 mit ",".
+ * Englisch steht hier (EN), die übrigen Sprachen liegen in lang/<code>.js und melden sich
+ * mit I18n.add(code, texte) an. Fehlt dort ein Text, gilt der englische.
+ * Zahlen folgen der Sprache: mit Dezimalkomma (de, es, fr …) "1.234,5" und ";" zwischen
+ * Argumenten, mit Dezimalpunkt (en, ja, ko, zh) "1,234.5" und ",".
  */
 (function (global, factory) {
   const api = factory();
@@ -157,20 +159,60 @@
     'Kurs vom {date}': 'rate of {date}',
   };
 
-  // Meldungen mit variablem Teil: deutsches Präfix → englisches Präfix
-  const PREFIXES = [['Unbekannt: ', 'Unknown: '], ['Ungültiges Zeichen: ', 'Invalid character: ']];
+  // Meldungen mit variablem Teil: das deutsche Präfix wird übersetzt, der Rest bleibt
+  const PREFIXES = ['Unbekannt: ', 'Ungültiges Zeichen: '];
+  EN['Unbekannt: '] = 'Unknown: ';
+  EN['Ungültiges Zeichen: '] = 'Invalid character: ';
 
+  // Sprache → Name in der Sprache selbst, Intl-Kennung, Dezimalzeichen, Tausendertrennung
+  const NBSP = '\u00a0';
+  const NNBSP = '\u202f';
+  const comma = (lang, name, intl, group = '.') => ({ lang, name, intl, decimal: ',', group, argSep: ';' });
+  const dot = (lang, name, intl) => ({ lang, name, intl, decimal: '.', group: ',', argSep: ',' });
   const LOCALES = {
-    de: { lang: 'de', intl: 'de-DE', decimal: ',', group: '.', argSep: ';' },
-    en: { lang: 'en', intl: 'en-GB', decimal: '.', group: ',', argSep: ',' },
+    de: comma('de', 'Deutsch', 'de-DE'),
+    en: dot('en', 'English', 'en-GB'),
+    es: comma('es', 'Español', 'es-ES'),
+    fr: comma('fr', 'Français', 'fr-FR', NNBSP),
+    it: comma('it', 'Italiano', 'it-IT'),
+    pt: comma('pt', 'Português', 'pt-BR'),
+    tr: comma('tr', 'Türkçe', 'tr-TR'),
+    pl: comma('pl', 'Polski', 'pl-PL', NBSP),
+    nl: comma('nl', 'Nederlands', 'nl-NL'),
+    sv: comma('sv', 'Svenska', 'sv-SE', NBSP),
+    da: comma('da', 'Dansk', 'da-DK'),
+    ja: dot('ja', '日本語', 'ja-JP'),
+    ko: dot('ko', '한국어', 'ko-KR'),
+    'zh-Hans': dot('zh-Hans', '简体中文', 'zh-CN'),
+    'zh-Hant': dot('zh-Hant', '繁體中文', 'zh-TW'),
   };
+  const LANGS = Object.keys(LOCALES);
+  const DICTS = { en: EN };
 
   let lang = 'de';
   const listeners = [];
 
+  // Gerätesprache → unterstützte Sprache (sonst Englisch)
+  function match(tag) {
+    const t = String(tag || '').toLowerCase();
+    if (t.startsWith('zh')) return /hant|-tw|-hk|-mo/.test(t) ? 'zh-Hant' : 'zh-Hans';
+    if (/^(nb|nn|no)\b/.test(t)) return 'da';
+    const base = t.split(/[-_]/)[0];
+    return LANGS.includes(base) ? base : null;
+  }
+
   function detect() {
     const nav = typeof navigator !== 'undefined' ? (navigator.languages || [navigator.language || 'de']) : ['de'];
-    return String(nav[0] || 'de').toLowerCase().startsWith('de') ? 'de' : 'en';
+    for (const tag of nav) {
+      const l = match(tag);
+      if (l) return l;
+    }
+    return 'en';
+  }
+
+  // Weitere Sprache anmelden (lang/<code>.js)
+  function add(code, texts) {
+    DICTS[code] = Object.assign(DICTS[code] || {}, texts);
   }
 
   function format(s, vars) {
@@ -178,12 +220,22 @@
   }
 
   // Deutscher Text → Text in der aktuellen Sprache
+  function word(de) {
+    const d = DICTS[lang];
+    if (d && de in d) return d[de];
+    return de in EN ? EN[de] : null;
+  }
+
   function t(de, vars) {
     if (lang === 'de') return format(de, vars);
-    if (de in EN) return format(EN[de], vars);
-    for (const [p, q] of PREFIXES) if (de.startsWith(p)) return q + de.slice(p.length);
+    const w = word(de);
+    if (w !== null) return format(w, vars);
+    for (const p of PREFIXES) if (de.startsWith(p)) return (word(p) || p) + de.slice(p.length);
     return format(de, vars);
   }
+
+  // Übersetzung nur, wenn die aktuelle Sprache den Text kennt (sonst null), z. B. für Einheitennamen
+  const has = (de) => (lang === 'de' ? de : (DICTS[lang] && de in DICTS[lang] ? DICTS[lang][de] : null));
 
   // Statische Texte der Seite übersetzen; das deutsche Original bleibt gemerkt
   const originals = new WeakMap();
@@ -218,14 +270,20 @@
   }
 
   function setLang(next) {
-    lang = next === 'en' ? 'en' : next === 'de' ? 'de' : detect();
+    lang = LANGS.includes(next) ? next : detect();
     apply();
     listeners.forEach((cb) => cb(lang));
   }
 
   return {
     EN,
+    DICTS,
+    LANGS,
+    LOCALES,
+    add,
+    match,
     t,
+    has,
     apply,
     setLang,
     detect,
