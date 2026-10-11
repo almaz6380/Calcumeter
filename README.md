@@ -33,7 +33,7 @@ Alternativ `index.html` einfach im Browser öffnen.
 | Weitere | `%` (inkl. `200 + 10 % = 220`), `mod`, `abs`, `round`, `floor`, `ceil`, `gcd`, `lcm`, `min`, `max`, `Rand` |
 | Konstanten | `π`, `e`, `φ` (phi), `τ` (tau), `Ans` (letztes Ergebnis), `EXP` für Zehnerpotenzen (`3E8`) |
 | Speicher | `MC`, `MR`, `M+`, `M−`, `MS` |
-| Komfort | Live-Vorschau, Verlauf (Klick übernimmt Ergebnis, Umschalt+Klick die Rechnung), Ergebnis per Klick kopieren, implizite Multiplikation (`2π`, `3(4+1)`), Hell/Dunkel nach Systemeinstellung |
+| Komfort | Live-Vorschau, Verlauf (Klick übernimmt Ergebnis, Umschalt+Klick die Rechnung), Ergebnis per Klick kopieren, implizite Multiplikation (`2π`, `3(4+1)`) |
 
 ## Tastatur
 
@@ -55,5 +55,5 @@ Alternativ `index.html` einfach im Browser öffnen.
 - `app.js` – Bedienung, Anzeige, Speicher, Verlauf, Tastatur
 - `currency.js` – Währungsrechner: Kurse laden und zwischenspeichern, Umrechnung
 - `index.html`, `style.css` – Oberfläche
-- `sw.js`, `manifest.webmanifest`, `icon.svg` – Offline-Betrieb und Installation
+- `sw.js`, `manifest.webmanifest`, `icons/` – Offline-Betrieb, Installation und App-Icons
 - `test/` – Tests mit dem eingebauten Node-Testrunner
