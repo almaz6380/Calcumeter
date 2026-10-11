@@ -17,8 +17,8 @@
     adUnits: {
       // Android: echte IDs aus AdMob
       android: { banner: 'ca-app-pub-8860791993288062/7534440237', rewarded: 'ca-app-pub-8860791993288062/2282113550' },
-      // iOS: noch Googles Test-IDs (TODO echte IDs)
-      ios: { banner: 'ca-app-pub-3940256099942544/2435281174', rewarded: 'ca-app-pub-3940256099942544/1712485313' },
+      // iOS: echter Banner; Prämie noch Googles Test-ID (TODO echte ID)
+      ios: { banner: 'ca-app-pub-8860791993288062/9282636174', rewarded: 'ca-app-pub-3940256099942544/1712485313' },
     },
     revenueCatKey: { android: '', ios: '' },   // öffentliche SDK-Keys von app.revenuecat.com (goog_… / appl_…)
     noAdsProduct: 'no_ads',
