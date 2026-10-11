@@ -4,51 +4,75 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Calcumeter – Taschenrechner mit wissenschaftlichen Funktionen und Währungsrechner">
-  <meta name="theme-color" content="#16181d">
+  <meta name="theme-color" content="#0E0F11">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Calcumeter</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
-    <section class="calculator" aria-label="Taschenrechner">
+  <div class="app">
+    <aside class="history" id="history" aria-label="Verlauf" hidden>
+      <div class="history-head">
+        <h2>Verlauf</h2>
+        <div class="history-actions">
+          <button type="button" class="text-btn" data-action="clear-history">Leeren</button>
+          <button type="button" class="icon-btn history-close" data-action="toggle-history" aria-label="Verlauf schließen">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+      </div>
+      <ol class="history-list" id="history-list"></ol>
+      <p class="history-empty" id="history-empty">Noch keine Berechnungen.</p>
+    </aside>
+
+    <main class="calculator">
       <header class="topbar">
         <h1 class="visually-hidden">Calcumeter</h1>
-        <div class="segmented tabs" role="tablist" aria-label="Ansicht">
+        <div class="tabs" role="tablist" aria-label="Ansicht">
           <button type="button" role="tab" id="tab-calc" data-view="calc" aria-selected="true" aria-controls="view-calc">Rechner</button>
           <button type="button" role="tab" id="tab-fx" data-view="fx" aria-selected="false" aria-controls="view-fx">Währung</button>
         </div>
         <div class="topbar-actions" id="calc-actions">
-          <div class="segmented sci-only" role="radiogroup" aria-label="Winkelmaß">
+          <div class="seg sci-only" role="radiogroup" aria-label="Winkelmaß">
             <button type="button" role="radio" data-angle="deg" aria-checked="true">DEG</button>
             <button type="button" role="radio" data-angle="rad" aria-checked="false">RAD</button>
           </div>
           <button type="button" class="icon-btn sci-btn" data-action="toggle-sci" aria-pressed="false" aria-label="Wissenschaftliche Funktionen einblenden" title="Wissenschaftliche Funktionen (Umschalt+S)">f(x)</button>
-          <button type="button" class="icon-btn" data-action="toggle-history" aria-label="Verlauf anzeigen" aria-expanded="false" title="Verlauf (Umschalt+H)">
+          <button type="button" class="icon-btn" data-action="toggle-history" id="history-toggle" aria-label="Verlauf anzeigen" aria-expanded="false" title="Verlauf (Umschalt+H)">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 3"/></svg>
+          </button>
+        </div>
+        <div class="topbar-actions" id="fx-actions" hidden>
+          <button type="button" class="icon-btn" id="fx-refresh" aria-label="Kurse aktualisieren" title="Kurse aktualisieren">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>
           </button>
         </div>
       </header>
 
-      <div class="view" id="view-calc" role="tabpanel" aria-labelledby="tab-calc">
+      <section class="view view-calc" id="view-calc" role="tabpanel" aria-labelledby="tab-calc">
         <div class="display" aria-live="polite">
           <div class="indicators">
-            <span id="ind-mode" class="sci-only">DEG</span>
-            <span id="ind-2nd" hidden>2nd</span>
-            <span id="ind-hyp" hidden>HYP</span>
-            <span id="ind-mem" hidden>M</span>
+            <button type="button" id="ind-mode" class="sci-only ind-btn" data-action="toggle-angle" title="Winkelmaß umschalten">DEG</button>
+            <span id="ind-2nd" class="on" hidden>2nd</span>
+            <span id="ind-hyp" class="on" hidden>HYP</span>
+            <span id="ind-mem" class="on" hidden>M</span>
           </div>
-          <div class="expression" id="expression" tabindex="0" aria-label="Eingabe"></div>
+          <div class="expression" id="expression" aria-label="Eingabe"></div>
           <button type="button" class="result" id="result" title="Klicken zum Kopieren" aria-label="Ergebnis"></button>
         </div>
 
         <div class="memory-row" role="group" aria-label="Speicher">
-          <button type="button" data-action="mc" title="Speicher löschen">MC</button>
-          <button type="button" data-action="mr" title="Speicher abrufen">MR</button>
-          <button type="button" data-action="m+" title="Zum Speicher addieren">M+</button>
-          <button type="button" data-action="m-" title="Vom Speicher abziehen">M−</button>
-          <button type="button" data-action="ms" title="Im Speicher ablegen">MS</button>
+          <button type="button" class="chip" data-action="mc" title="Speicher löschen">MC</button>
+          <button type="button" class="chip" data-action="mr" title="Speicher abrufen">MR</button>
+          <button type="button" class="chip" data-action="m+" title="Zum Speicher addieren">M+</button>
+          <button type="button" class="chip" data-action="m-" title="Vom Speicher abziehen">M−</button>
+          <button type="button" class="chip" data-action="ms" title="Im Speicher ablegen">MS</button>
         </div>
 
         <div class="pads">
@@ -79,7 +103,7 @@
 
             <button type="button" class="key fn" data-insert="(">(</button>
             <button type="button" class="key fn" data-insert=")">)</button>
-            <button type="button" class="key fn" data-insert=",">,</button>
+            <button type="button" class="key fn" data-insert=";" title="Trennt Funktionsargumente, z. B. log(8;2)">;</button>
             <button type="button" class="key fn" data-insert=" mod ">mod</button>
             <button type="button" class="key fn" data-insert="π">π</button>
 
@@ -91,76 +115,89 @@
           </div>
 
           <div class="pad num" role="group" aria-label="Ziffern und Grundrechenarten">
-            <button type="button" class="key danger" data-action="clear">AC</button>
-            <button type="button" class="key op" data-action="backspace" aria-label="Löschen">⌫</button>
-            <button type="button" class="key op" data-insert="%">%</button>
+            <button type="button" class="key util accent-text" data-action="clear">AC</button>
+            <button type="button" class="key util" data-action="backspace" aria-label="Löschen">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 5h11v14H9l-6-7z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m12 9 5 6m0-6-5 6"/></svg>
+            </button>
+            <button type="button" class="key util" data-insert="%">%</button>
             <button type="button" class="key op" data-insert="÷">÷</button>
 
-            <button type="button" class="key digit" data-insert="7">7</button>
-            <button type="button" class="key digit" data-insert="8">8</button>
-            <button type="button" class="key digit" data-insert="9">9</button>
+            <button type="button" class="key" data-insert="7">7</button>
+            <button type="button" class="key" data-insert="8">8</button>
+            <button type="button" class="key" data-insert="9">9</button>
             <button type="button" class="key op" data-insert="×">×</button>
 
-            <button type="button" class="key digit" data-insert="4">4</button>
-            <button type="button" class="key digit" data-insert="5">5</button>
-            <button type="button" class="key digit" data-insert="6">6</button>
+            <button type="button" class="key" data-insert="4">4</button>
+            <button type="button" class="key" data-insert="5">5</button>
+            <button type="button" class="key" data-insert="6">6</button>
             <button type="button" class="key op" data-insert="−">−</button>
 
-            <button type="button" class="key digit" data-insert="1">1</button>
-            <button type="button" class="key digit" data-insert="2">2</button>
-            <button type="button" class="key digit" data-insert="3">3</button>
+            <button type="button" class="key" data-insert="1">1</button>
+            <button type="button" class="key" data-insert="2">2</button>
+            <button type="button" class="key" data-insert="3">3</button>
             <button type="button" class="key op" data-insert="+">+</button>
 
-            <button type="button" class="key digit" data-action="sign" aria-label="Vorzeichen wechseln">±</button>
-            <button type="button" class="key digit" data-insert="0">0</button>
-            <button type="button" class="key digit" data-insert=".">.</button>
-            <button type="button" class="key equals" data-action="equals">=</button>
+            <button type="button" class="key small" data-action="sign" aria-label="Vorzeichen wechseln">±</button>
+            <button type="button" class="key" data-insert="0">0</button>
+            <button type="button" class="key" data-insert="," aria-label="Komma">,</button>
+            <button type="button" class="key equals" data-action="equals" aria-label="Ergebnis">=</button>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="view fx" id="view-fx" role="tabpanel" aria-labelledby="tab-fx" hidden>
-        <div class="fx-card">
-          <div class="fx-field">
-            <label for="fx-amount">Betrag <span id="fx-from-name"></span></label>
-            <div class="fx-row">
-              <input id="fx-amount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="100" aria-describedby="fx-hint">
-              <span class="fx-select"><span class="fx-select-code" id="fx-from-code" aria-hidden="true"></span><select id="fx-from" aria-label="Von Währung"></select></span>
+      <section class="view view-fx" id="view-fx" role="tabpanel" aria-labelledby="tab-fx" hidden>
+        <div class="fx-info">
+          <div class="fx-pair">
+            <div class="fx-row from">
+              <label class="fx-cur">
+                <span class="fx-badge" id="fx-from-badge" aria-hidden="true"></span>
+                <span class="fx-cur-text"><strong id="fx-from-code"></strong><small id="fx-from-name"></small></span>
+                <select id="fx-from" aria-label="Ausgangswährung"></select>
+              </label>
+              <div class="fx-amount" id="fx-amount" role="textbox" aria-label="Betrag" tabindex="0"></div>
+            </div>
+            <button type="button" class="fx-swap" id="fx-swap" aria-label="Währungen tauschen" title="Tauschen">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>
+            </button>
+            <div class="fx-row to">
+              <label class="fx-cur">
+                <span class="fx-badge" id="fx-to-badge" aria-hidden="true"></span>
+                <span class="fx-cur-text"><strong id="fx-to-code"></strong><small id="fx-to-name"></small></span>
+                <select id="fx-to" aria-label="Zielwährung"></select>
+              </label>
+              <output class="fx-amount" id="fx-result" for="fx-from fx-to"></output>
             </div>
           </div>
-          <button type="button" class="fx-swap" id="fx-swap" aria-label="Währungen tauschen" title="Tauschen">
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>
+          <div class="fx-meta">
+            <span id="fx-rate"></span>
+            <span id="fx-status-text">Kurse werden geladen …</span>
+          </div>
+          <ul class="fx-list" id="fx-list" aria-label="Weitere Währungen"></ul>
+        </div>
+
+        <div class="pad fxpad" role="group" aria-label="Betrag eingeben">
+          <button type="button" class="key" data-fxkey="7">7</button>
+          <button type="button" class="key" data-fxkey="8">8</button>
+          <button type="button" class="key" data-fxkey="9">9</button>
+          <button type="button" class="key util" data-fxkey="back" aria-label="Löschen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 5h11v14H9l-6-7z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m12 9 5 6m0-6-5 6"/></svg>
           </button>
-          <div class="fx-field">
-            <label for="fx-to">Ergebnis <span id="fx-to-name"></span></label>
-            <div class="fx-row">
-              <output id="fx-result" for="fx-amount fx-from fx-to"></output>
-              <span class="fx-select"><span class="fx-select-code" id="fx-to-code" aria-hidden="true"></span><select id="fx-to" aria-label="In Währung"></select></span>
-            </div>
-          </div>
-          <p class="fx-rate" id="fx-rate"></p>
+          <button type="button" class="key" data-fxkey="4">4</button>
+          <button type="button" class="key" data-fxkey="5">5</button>
+          <button type="button" class="key" data-fxkey="6">6</button>
+          <button type="button" class="key util accent-text" data-fxkey="clear">C</button>
+          <button type="button" class="key" data-fxkey="1">1</button>
+          <button type="button" class="key" data-fxkey="2">2</button>
+          <button type="button" class="key" data-fxkey="3">3</button>
+          <button type="button" class="key util label" data-fxkey="ans" title="Letztes Rechner-Ergebnis übernehmen">Ans</button>
+          <button type="button" class="key" data-fxkey="," aria-label="Komma">,</button>
+          <button type="button" class="key" data-fxkey="0">0</button>
+          <button type="button" class="key" data-fxkey="00">00</button>
+          <button type="button" class="key equals label" data-fxkey="to-calc" title="Ergebnis in den Rechner übernehmen">→ Rechner</button>
         </div>
-        <p class="fx-hint" id="fx-hint">Rechnungen sind erlaubt, z.&nbsp;B. <code>49,90*3</code>.</p>
-        <div class="fx-actions">
-          <button type="button" class="text-btn" id="fx-from-calc">Rechner-Ergebnis übernehmen</button>
-          <button type="button" class="text-btn" id="fx-to-calc">In Rechner übernehmen</button>
-        </div>
-        <h2 class="fx-subhead">Weitere Währungen</h2>
-        <ul class="fx-list" id="fx-list"></ul>
-        <p class="fx-status" id="fx-status"><span id="fx-status-text">Kurse werden geladen …</span>
-          <button type="button" class="text-btn" id="fx-refresh">Aktualisieren</button></p>
-      </div>
-    </section>
-
-    <aside class="history" id="history" aria-label="Verlauf" hidden>
-      <div class="history-head">
-        <h2>Verlauf</h2>
-        <button type="button" class="text-btn" data-action="clear-history">Leeren</button>
-      </div>
-      <ol class="history-list" id="history-list"></ol>
-      <p class="history-empty" id="history-empty">Noch keine Berechnungen.</p>
-    </aside>
-  </main>
+      </section>
+    </main>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

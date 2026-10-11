@@ -1,5 +1,5 @@
 /* Offline-Unterstützung: Netzwerk zuerst, Cache als Rückfall. */
-const CACHE = 'calcumeter-v2';
+const CACHE = 'calcumeter-v3';
 const ASSETS = ['./', 'index.html', 'style.css', 'calculator.js', 'currency.js', 'app.js', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {

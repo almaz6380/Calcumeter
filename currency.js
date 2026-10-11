@@ -79,12 +79,32 @@
 
   // ---------- Oberfläche ----------
 
+  const BADGE_COLORS = ['#8FB8FF', '#8BE3A6', '#FFB547', '#FF9C8A', '#C9AEFF', '#7FDCE0', '#F2D16B'];
+
+  function badgeColor(code) {
+    let h = 0;
+    for (const c of code) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return BADGE_COLORS[h % BADGE_COLORS.length];
+  }
+
+  // Betrag beim Tippen mit Tausenderpunkten zeigen ("12345,6" → "12.345,6")
+  function groupTyped(text) {
+    const m = /^(\d*)(,\d*)?$/.exec(text);
+    if (!m) return text.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
+    return (m[1] || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (m[2] || '');
+  }
+
   function init(hooks) {
     const $ = (id) => document.getElementById(id);
     const el = {
-      amount: $('fx-amount'), from: $('fx-from'), to: $('fx-to'), result: $('fx-result'),
+      view: $('view-fx'),
+      amount: $('fx-amount'), result: $('fx-result'),
+      from: $('fx-from'), to: $('fx-to'),
+      fromCode: $('fx-from-code'), toCode: $('fx-to-code'),
+      fromName: $('fx-from-name'), toName: $('fx-to-name'),
+      fromBadge: $('fx-from-badge'), toBadge: $('fx-to-badge'),
       rate: $('fx-rate'), list: $('fx-list'), status: $('fx-status-text'),
-      swap: $('fx-swap'), refresh: $('fx-refresh'), fromCalc: $('fx-from-calc'), toCalc: $('fx-to-calc'),
+      swap: $('fx-swap'), refresh: $('fx-refresh'),
     };
     const { evaluate } = window.Calc;
 
@@ -92,13 +112,16 @@
     let offline = false;
     let loading = null;
     let lastValue = null;
-    let prefs = { from: 'EUR', to: 'USD', amount: '100' };
+    const prefs = { from: 'EUR', to: 'USD', amount: '100' };
 
     try {
       const saved = JSON.parse(localStorage.getItem(RATES_KEY) || 'null');
       if (saved && saved.rates) data = saved;
       Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}'));
     } catch (_) { /* ohne Speicher weiter */ }
+    // ältere Versionen speicherten den Betrag als freien Text, z. B. "12.5"
+    prefs.amount = String(prefs.amount);
+    prefs.amount = prefs.amount.includes(',') ? prefs.amount.replace(/\./g, '') : prefs.amount.replace(/\./g, ',');
 
     const savePrefs = () => {
       try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) { /* ignorieren */ }
@@ -108,6 +131,14 @@
     try { names = new Intl.DisplayNames(['de'], { type: 'currency' }); } catch (_) { names = null; }
     const nameOf = (code) => {
       try { return (names && names.of(code)) || code; } catch (_) { return code; }
+    };
+
+    const symbolOf = (code) => {
+      try {
+        const part = new Intl.NumberFormat('de-DE', { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' })
+          .formatToParts(0).find((p) => p.type === 'currency');
+        return part ? part.value : code;
+      } catch (_) { return code; }
     };
 
     const money = (value, code) => {
@@ -128,7 +159,7 @@
       } catch (_) { /* Standard: 2 Nachkommastellen */ }
       return new Intl.NumberFormat('de-DE', { minimumFractionDigits: frac, maximumFractionDigits: frac }).format(value);
     };
-    const rateFmt = new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 6 });
+    const rateFmt = new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 5 });
 
     function fillSelects() {
       const codes = Object.keys(data.rates).sort();
@@ -152,7 +183,7 @@
     }
 
     function amountValue() {
-      const text = el.amount.value.trim();
+      const text = prefs.amount.trim();
       if (text === '') return { value: 0 };
       try {
         return { value: evaluate(normalizeAmount(text)) };
@@ -161,26 +192,33 @@
       }
     }
 
+    function setBadge(node, code) {
+      const sym = symbolOf(code);
+      node.textContent = sym.length > 2 ? code : sym;
+      node.classList.toggle('long', sym.length > 2);
+      node.style.background = badgeColor(code);
+    }
+
     function render() {
       const { from, to } = prefs;
       const { value, error } = amountValue();
-      el.amount.setAttribute('aria-invalid', String(Boolean(error)));
+      el.amount.textContent = groupTyped(prefs.amount);
+      el.amount.classList.toggle('invalid', Boolean(error));
       if (error) {
         el.result.textContent = '–';
-        el.result.classList.add('error');
         lastValue = null;
       } else {
         const out = convert(value, from, to, data.rates);
         el.result.textContent = plain(out, to);
-        el.result.classList.remove('error');
         lastValue = out;
       }
-      $('fx-from-code').textContent = from;
-      $('fx-to-code').textContent = to;
-      $('fx-from-name').textContent = `in ${nameOf(from)}`;
-      $('fx-to-name').textContent = `in ${nameOf(to)}`;
-      el.rate.textContent = `1 ${from} = ${rateFmt.format(convert(1, from, to, data.rates))} ${to}`
-        + `  ·  1 ${to} = ${rateFmt.format(convert(1, to, from, data.rates))} ${from}`;
+      el.fromCode.textContent = from;
+      el.toCode.textContent = to;
+      el.fromName.textContent = nameOf(from);
+      el.toName.textContent = nameOf(to);
+      setBadge(el.fromBadge, from);
+      setBadge(el.toBadge, to);
+      el.rate.textContent = `1 ${from} = ${rateFmt.format(convert(1, from, to, data.rates))} ${to}`;
 
       const base = error ? 0 : value;
       el.list.replaceChildren(...POPULAR
@@ -193,12 +231,15 @@
           btn.dataset.code = c;
           btn.title = `${c} als Zielwährung wählen`;
           const left = document.createElement('span');
-          left.className = 'fx-code';
-          left.innerHTML = `<strong></strong><small></small>`;
-          left.firstChild.textContent = c;
-          left.lastChild.textContent = nameOf(c);
+          const code = document.createElement('strong');
+          code.className = 'fx-li-code';
+          code.textContent = c;
+          const name = document.createElement('span');
+          name.className = 'fx-li-name';
+          name.textContent = nameOf(c);
+          left.append(code, name);
           const right = document.createElement('span');
-          right.className = 'fx-val';
+          right.className = 'fx-li-val';
           right.textContent = money(convert(base, from, c, data.rates), c);
           btn.append(left, right);
           li.append(btn);
@@ -207,10 +248,14 @@
 
       const when = new Date(data.date);
       const dateText = Number.isNaN(when.getTime()) ? data.date
-        : when.toLocaleString('de-DE', data.date.length > 10
-          ? { dateStyle: 'medium', timeStyle: 'short' } : { dateStyle: 'medium' });
-      el.status.textContent = loading ? 'Kurse werden aktualisiert …'
-        : `${offline ? 'Offline – ' : ''}Kurse vom ${dateText} · Quelle: ${data.source}`;
+        : when.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      el.status.textContent = loading ? 'Aktualisiere …'
+        : `${offline ? 'Offline · ' : ''}${data.source.replace(' (eingebaut)', '')} · ${dateText}`;
+
+      if (!el.view.hidden && hooks.fitText) {
+        hooks.fitText(el.amount, 18);
+        hooks.fitText(el.result, 18);
+      }
     }
 
     async function refresh(force) {
@@ -233,12 +278,58 @@
       return loading;
     }
 
-    el.amount.value = prefs.amount;
-    el.amount.addEventListener('input', () => {
-      prefs.amount = el.amount.value;
+    function setAmount(text) {
+      prefs.amount = text.slice(0, 18);
       savePrefs();
       render();
+    }
+
+    // Eingabe über Tasten oder Tastatur
+    function press(key) {
+      const a = prefs.amount === '0' ? '' : prefs.amount;
+      if (/^\d+$/.test(key)) {
+        if (a === '' && key === '00') return setAmount('0');
+        setAmount(a + key);
+      } else if (key === ',') {
+        if (/,\d*$/.test(a)) return;
+        setAmount((/\d$/.test(a) ? a : `${a}0`) + ',');
+      } else if (/^[+\-*/()]$/.test(key)) {
+        setAmount((a || '0') + key);
+      } else if (key === 'back') {
+        setAmount(a.slice(0, -1));
+      } else if (key === 'clear') {
+        setAmount('');
+      } else if (key === 'ans') {
+        setAmount(String(hooks.getAns()).replace('.', ','));
+      } else if (key === 'equals') {
+        const { value, error } = amountValue();
+        if (!error) setAmount(String(Math.round(value * 1e6) / 1e6).replace('.', ','));
+      } else if (key === 'to-calc') {
+        if (lastValue === null) return;
+        hooks.useInCalc(Math.abs(lastValue) >= 0.01 ? Math.round(lastValue * 100) / 100 : lastValue);
+      }
+    }
+
+    el.view.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-fxkey]');
+      if (!btn) return;
+      press(btn.dataset.fxkey);
     });
+
+    document.addEventListener('keydown', (e) => {
+      if (el.view.hidden || e.ctrlKey || e.metaKey || e.altKey || e.target.closest('select')) return;
+      const k = e.key;
+      let key = null;
+      if (/^[0-9]$/.test(k) || /^[+\-*/()]$/.test(k)) key = k;
+      else if (k === ',' || k === '.') key = ',';
+      else if (k === 'Backspace') key = 'back';
+      else if (k === 'Escape' || k === 'Delete') key = 'clear';
+      else if (k === 'Enter' || k === '=') key = 'equals';
+      if (key === null) return;
+      e.preventDefault();
+      press(key);
+    });
+
     el.from.addEventListener('change', () => { prefs.from = el.from.value; savePrefs(); render(); });
     el.to.addEventListener('change', () => { prefs.to = el.to.value; savePrefs(); render(); });
     el.swap.addEventListener('click', () => {
@@ -257,17 +348,7 @@
       render();
     });
     el.refresh.addEventListener('click', () => refresh(true));
-    el.fromCalc.addEventListener('click', () => {
-      const n = hooks.getAns();
-      el.amount.value = String(n).replace('.', ',');
-      prefs.amount = el.amount.value;
-      savePrefs();
-      render();
-    });
-    el.toCalc.addEventListener('click', () => {
-      if (lastValue === null) return;
-      hooks.useInCalc(Math.abs(lastValue) >= 0.01 ? Math.round(lastValue * 100) / 100 : lastValue);
-    });
+    window.addEventListener('resize', () => { if (!el.view.hidden) render(); });
 
     fillSelects();
     render();
