@@ -141,7 +141,7 @@ select:focus-visible + *,
 .app {
   display: flex;
   height: 100vh;
-  height: 100dvh;
+  height: calc(100dvh - var(--ad-h, 0px));   /* Platz für das Werbebanner der Store-App */
 }
 
 .calculator {
@@ -827,7 +827,25 @@ select:focus-visible + *,
 .switch[aria-checked="true"] span { transform: translateX(20px); background: #FFFFFF; }
 
 .setting-hint { margin: 4px 4px 0; font-size: 13px; color: var(--muted); }
-.legal-links { display: flex; gap: 10px; margin: 8px 4px 0; font-size: 13px; color: var(--muted); }
+.legal-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 8px 4px 0; font-size: 13px; color: var(--muted); }
+.legal-links .text-btn { padding: 6px 0; font-size: 13px; }
+
+.money-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 16px;
+  background: var(--raise);
+  text-align: left;
+}
+
+.money-row:hover { background: var(--raise-2); }
+.money-price { flex-shrink: 0; padding: 6px 12px; border-radius: 999px; background: var(--accent-fill); color: var(--accent-ink); font-weight: 600; }
+.money-price:empty { display: none; }
 .legal-links a { color: var(--accent); text-decoration: none; }
 .legal-links a:hover { text-decoration: underline; }
 
