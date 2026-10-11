@@ -72,24 +72,29 @@ final class WidgetStore {
         return rates.optDouble(to) / rates.optDouble(from);
     }
 
-    static boolean german(JSONObject data) {
-        String lang = data.optString("lang", Locale.getDefault().getLanguage());
-        return lang.startsWith("de");
+    /** Sprache der App für Zahlen und Datum (z. B. "fr-FR"); ältere Daten kennen nur "de"/"en". */
+    static Locale locale(JSONObject data) {
+        String tag = data.optString("locale", "");
+        if (!tag.isEmpty()) return Locale.forLanguageTag(tag);
+        String lang = data.optString("lang", "");
+        if (lang.startsWith("de")) return Locale.GERMANY;
+        if (lang.startsWith("en")) return Locale.UK;
+        return Locale.getDefault();
     }
 
-    static String format(double v, boolean german) {
+    static String format(double v, Locale locale) {
         if (Double.isNaN(v)) return "–";
-        NumberFormat nf = NumberFormat.getNumberInstance(german ? Locale.GERMANY : Locale.UK);
+        NumberFormat nf = NumberFormat.getNumberInstance(locale);
         int digits = v >= 100 ? 2 : v >= 1 ? 4 : 6;
         nf.setMinimumFractionDigits(Math.min(2, digits));
         nf.setMaximumFractionDigits(digits);
         return nf.format(v);
     }
 
-    static String date(JSONObject data, boolean german) {
+    static String date(JSONObject data, Locale locale) {
         long ms = data.optLong("updated", 0);
         if (ms <= 0) return "";
-        return DateFormat.getDateInstance(DateFormat.SHORT, german ? Locale.GERMANY : Locale.UK).format(new Date(ms));
+        return DateFormat.getDateInstance(DateFormat.SHORT, locale).format(new Date(ms));
     }
 
     /** Alle Widgets neu zeichnen, z. B. nachdem die App neue Daten geliefert hat. */

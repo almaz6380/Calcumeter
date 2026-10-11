@@ -43,6 +43,7 @@
     viewSwitchLabel: $('#view-switch-label'),
     menu: $('#menu-sheet'),
     vibrate: $('#set-vibrate'),
+    lang: $('#set-lang'),
     themeColor: document.querySelector('meta[name="theme-color"]'),
     toast: $('#toast'),
     calculator: $('.calculator'),
@@ -85,10 +86,11 @@
   const L = () => I18n.locale();
   const toCalc = (expr) => (L().decimal === ',' ? expr.replace(/,/g, '.') : expr);
 
-  // Rechnung von einer Schreibweise in die andere umschreiben
+  // Rechnung von einer Schreibweise in die andere umschreiben (Dezimalkomma ↔ Dezimalpunkt)
   function convertExpr(expr, from, to) {
-    if (from === to) return expr;
-    return from === 'de'
+    const dec = (l) => (I18n.LOCALES[l] || I18n.LOCALES.de).decimal;
+    if (dec(from) === dec(to)) return expr;
+    return dec(from) === ','
       ? expr.replace(/,/g, '\u0001').replace(/;/g, ',').replace(/\u0001/g, '.')
       : expr.replace(/,/g, ';').replace(/\./g, ',');
   }
@@ -317,7 +319,7 @@
 
   const settings = { theme: 'auto', vibrate: true };
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (_) { /* Standard */ }
-  if (!['auto', 'de', 'en'].includes(settings.lang)) settings.lang = 'auto';
+  if (settings.lang !== 'auto' && !I18n.LANGS.includes(settings.lang)) settings.lang = 'auto';
   I18n.setLang(settings.lang === 'auto' ? null : settings.lang);
 
   // Nach einem Sprachwechsel: Eingabe umschreiben und alle Texte neu setzen
@@ -341,9 +343,7 @@
     document.querySelectorAll('[data-theme-choice]').forEach((b) => {
       b.setAttribute('aria-checked', String(b.dataset.themeChoice === settings.theme));
     });
-    document.querySelectorAll('[data-lang-choice]').forEach((b) => {
-      b.setAttribute('aria-checked', String(b.dataset.langChoice === settings.lang));
-    });
+    els.lang.value = settings.lang;
     els.vibrate.setAttribute('aria-checked', String(settings.vibrate));
     window.Keypad.setHaptics(settings.vibrate);
     els.themeColor.setAttribute('content', getComputedStyle(root).getPropertyValue('--ground').trim() || '#0E0F11');
@@ -352,6 +352,22 @@
   }
 
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => applySettings());
+
+  // Sprachauswahl: Auto + jede Sprache in ihrem eigenen Namen
+  for (const code of I18n.LANGS) {
+    const o = document.createElement('option');
+    o.value = code;
+    o.lang = code;
+    o.textContent = I18n.LOCALES[code].name;
+    els.lang.appendChild(o);
+  }
+  els.lang.addEventListener('change', () => {
+    const prev = I18n.getLang();
+    settings.lang = els.lang.value;
+    I18n.setLang(settings.lang === 'auto' ? null : settings.lang);
+    applySettings();
+    refreshTexts(prev);
+  });
 
   function openMenu() {
     window.Money.renderMenu();
@@ -372,14 +388,6 @@
     }
     const legal = e.target.closest('a[data-legal]');
     if (legal) legal.href = `${legal.getAttribute('href').split('?')[0]}?lang=${I18n.getLang()}`;
-    const langBtn = e.target.closest('[data-lang-choice]');
-    if (langBtn) {
-      const prev = I18n.getLang();
-      settings.lang = langBtn.dataset.langChoice;
-      I18n.setLang(settings.lang === 'auto' ? null : settings.lang);
-      applySettings();
-      refreshTexts(prev);
-    }
     const theme = e.target.closest('[data-theme-choice]');
     if (theme) {
       settings.theme = theme.dataset.themeChoice;

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">為替レート</string>
+    <string name="widget_rate_desc">お気に入りの通貨のレートを自動更新</string>
+    <string name="widget_quick_name">Calcumeter クイック起動</string>
+    <string name="widget_quick_desc">電卓・通貨・単位・グラフをすぐに開く</string>
+    <string name="widget_view_calc">電卓</string>
+    <string name="widget_view_fx">通貨</string>
+    <string name="widget_view_units">単位</string>
+    <string name="widget_view_graph">グラフ</string>
+</resources>

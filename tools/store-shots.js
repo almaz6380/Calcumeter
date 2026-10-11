@@ -3,6 +3,7 @@
  *
  *   npm start                       # lokaler Server auf :8080 (zweites Terminal)
  *   node tools/store-shots.js       # schreibt store/screenshots/<sprache>/… und store/feature-graphic.png
+ *   LANGS=fr,ja node tools/store-shots.js   # nur einzelne Sprachen
  *
  * iOS 6,9": 1290 × 2796 (430 × 932 bei 3×), Android: 1080 × 1920 (360 × 640 bei 3×).
  */
@@ -24,7 +25,13 @@ const SEED = {
     'calcumeter.units': { cat: 'temperature', amount: '21', sel: { temperature: { from: 'C', to: 'F' } } },
   },
 };
-SEED.en = SEED.de;
+// Sprache → Browser-Locale; mit LANGS=de,en nur einzelne Sprachen
+const LOCALE = {
+  de: 'de-DE', en: 'en-GB', es: 'es-ES', fr: 'fr-FR', it: 'it-IT', pt: 'pt-BR', tr: 'tr-TR', pl: 'pl-PL',
+  nl: 'nl-NL', sv: 'sv-SE', da: 'da-DK', ja: 'ja-JP', ko: 'ko-KR', 'zh-Hans': 'zh-CN', 'zh-Hant': 'zh-TW',
+};
+const LANGS = process.env.LANGS ? process.env.LANGS.split(',') : Object.keys(LOCALE);
+for (const l of LANGS) SEED[l] = SEED.de;
 
 async function shoot(browser, lang, kind) {
   const ctx = await browser.newContext({
@@ -33,7 +40,7 @@ async function shoot(browser, lang, kind) {
     isMobile: true,
     hasTouch: true,
     colorScheme: 'dark',
-    locale: lang === 'de' ? 'de-DE' : 'en-GB',
+    locale: LOCALE[lang],
   });
   await ctx.addInitScript((seed) => {
     if (localStorage.getItem('__seeded')) return;
@@ -54,7 +61,7 @@ async function shoot(browser, lang, kind) {
     await page.click(`.view-item[data-view="${view}"]`);
     await page.waitForTimeout(300);
   };
-  const dec = lang === 'de' ? ',' : '.';
+  const dec = await page.evaluate(() => I18n.locale().decimal);
 
   await page.keyboard.type(`1280*0${dec}19+45`);
   await page.keyboard.press('Enter');
@@ -85,7 +92,7 @@ async function featureGraphic(browser) {
 
 (async () => {
   const browser = await chromium.launch();
-  for (const lang of ['de', 'en']) {
+  for (const lang of LANGS) {
     for (const kind of ['ios', 'android']) await shoot(browser, lang, kind);
   }
   await featureGraphic(browser);

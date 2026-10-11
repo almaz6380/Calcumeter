@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Taux de change</string>
+    <string name="widget_rate_desc">Vos devises favorites, mises à jour automatiquement</string>
+    <string name="widget_quick_name">Accès rapide Calcumeter</string>
+    <string name="widget_quick_desc">Ouvrez directement la calculatrice, les devises, les unités ou le graphique</string>
+    <string name="widget_view_calc">Calcul</string>
+    <string name="widget_view_fx">Devises</string>
+    <string name="widget_view_units">Unités</string>
+    <string name="widget_view_graph">Graphique</string>
+</resources>

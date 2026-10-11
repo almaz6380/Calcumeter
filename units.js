@@ -120,10 +120,11 @@
   // englische Kurzzeichen, wo sie sich unterscheiden
   const EN_SYM = { volume: { tsp: 'tsp', tbsp: 'tbsp' }, length: { nmi: 'nmi' }, time: { wk: 'wk', mo: 'mo', yr: 'yr' } };
 
+  // Namen: Deutsch aus CATEGORIES, weitere Sprachen über lang/<code>.js (Schlüssel = deutscher Name), sonst Englisch
   const lang = () => I18nRef.getLang();
-  const catName = (cat) => (lang() === 'en' ? EN[cat][0] : CATEGORIES[cat].name);
-  const unitName = (cat, id) => (lang() === 'en' ? EN[cat][1][id] : CATEGORIES[cat].units[id][1]);
-  const unitSym = (cat, id) => (lang() === 'en' && EN_SYM[cat] && EN_SYM[cat][id]) || CATEGORIES[cat].units[id][0];
+  const catName = (cat) => I18nRef.has(CATEGORIES[cat].name) || EN[cat][0];
+  const unitName = (cat, id) => I18nRef.has(CATEGORIES[cat].units[id][1]) || EN[cat][1][id];
+  const unitSym = (cat, id) => (lang() !== 'de' && EN_SYM[cat] && EN_SYM[cat][id]) || CATEGORIES[cat].units[id][0];
 
   // ---------- Reine Logik ----------
 

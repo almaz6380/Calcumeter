@@ -13,7 +13,7 @@ out.mkdir()
 
 FILES = ['style.css'] + sorted(p.name for p in root.glob('*.js'))
 FILES += [p.name for p in root.glob('*.html') if p.name != 'index.html']   # privacy.html, imprint.html …
-DIRS = ['assets', 'icons']
+DIRS = ['assets', 'icons', 'lang']
 
 page = (root / 'index.html').read_text(encoding='utf-8')
 if APP:

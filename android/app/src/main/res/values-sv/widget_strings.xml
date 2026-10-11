@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Växelkurser</string>
+    <string name="widget_rate_desc">Dina favoritvalutor, uppdateras automatiskt</string>
+    <string name="widget_quick_name">Calcumeter snabbstart</string>
+    <string name="widget_quick_desc">Öppna räknare, valuta, enheter eller graf direkt</string>
+    <string name="widget_view_calc">Räknare</string>
+    <string name="widget_view_fx">Valuta</string>
+    <string name="widget_view_units">Enheter</string>
+    <string name="widget_view_graph">Graf</string>
+</resources>

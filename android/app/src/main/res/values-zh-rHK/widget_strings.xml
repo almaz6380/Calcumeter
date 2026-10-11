@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">匯率</string>
+    <string name="widget_rate_desc">你最愛的貨幣，自動更新</string>
+    <string name="widget_quick_name">Calcumeter 快速啟動</string>
+    <string name="widget_quick_desc">直接開啟計算機、匯率、單位或繪圖</string>
+    <string name="widget_view_calc">計算機</string>
+    <string name="widget_view_fx">匯率</string>
+    <string name="widget_view_units">單位</string>
+    <string name="widget_view_graph">繪圖</string>
+</resources>

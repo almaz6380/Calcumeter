@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Valutakurser</string>
+    <string name="widget_rate_desc">Dine favoritvalutaer, opdateres automatisk</string>
+    <string name="widget_quick_name">Calcumeter hurtigstart</string>
+    <string name="widget_quick_desc">Åbn lommeregner, valuta, enheder eller graf direkte</string>
+    <string name="widget_view_calc">Beregner</string>
+    <string name="widget_view_fx">Valuta</string>
+    <string name="widget_view_units">Enheder</string>
+    <string name="widget_view_graph">Graf</string>
+</resources>

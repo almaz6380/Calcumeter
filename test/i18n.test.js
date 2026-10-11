@@ -72,3 +72,68 @@ test('Betragseingabe', () => {
   assert.equal(Keypad.normalizeAmount('1.234,50'), '1234.50');
   assert.equal(Keypad.normalizeAmount('12.5'), '12.5');
 });
+
+// ---------- weitere Sprachen (lang/<code>.js) ----------
+
+const Units = require('../units.js');
+const OTHER = I18n.LANGS.filter((l) => l !== 'de' && l !== 'en');
+for (const l of OTHER) require(`../lang/${l}.js`);
+
+test('Jede weitere Sprache übersetzt alle Texte und Einheiten', () => {
+  const unitNames = [];
+  for (const c of Object.values(Units.CATEGORIES)) {
+    unitNames.push(c.name, ...Object.values(c.units).map((u) => u[1]));
+  }
+  for (const l of OTHER) {
+    const d = I18n.DICTS[l];
+    assert.ok(d, `${l} fehlt`);
+    const missing = [...Object.keys(I18n.EN), ...unitNames].filter((k) => !(k in d) || !String(d[k]).trim());
+    assert.deepEqual(missing, [], l);
+  }
+});
+
+test('Platzhalter bleiben in jeder Sprache erhalten', () => {
+  for (const l of OTHER) {
+    for (const [de, en] of Object.entries(I18n.EN)) {
+      const want = (en.match(/\{\w+\}/g) || []).sort().join();
+      assert.equal((I18n.DICTS[l][de].match(/\{\w+\}/g) || []).sort().join(), want, `${l}: ${de}`);
+    }
+  }
+});
+
+test('Gerätesprache wird erkannt', () => {
+  assert.equal(I18n.match('es-MX'), 'es');
+  assert.equal(I18n.match('pt-BR'), 'pt');
+  assert.equal(I18n.match('zh-TW'), 'zh-Hant');
+  assert.equal(I18n.match('zh-Hant-HK'), 'zh-Hant');
+  assert.equal(I18n.match('zh-CN'), 'zh-Hans');
+  assert.equal(I18n.match('nb-NO'), 'da');
+  assert.equal(I18n.match('ru-RU'), null);
+});
+
+test('Zahlen und Einheiten in anderen Sprachen', () => {
+  I18n.setLang('fr');
+  assert.equal(Keypad.groupTyped('12345.6'), '12 345,6');
+  assert.equal(I18n.t('Unbekannt: foo').endsWith(': foo'), true);
+  I18n.setLang('ja');
+  assert.equal(Keypad.groupTyped('12345.6'), '12,345.6');
+  I18n.setLang('de');
+});
+
+test('Store-Texte halten die Längen ein', () => {
+  const LIMITS = { name: 30, subtitle: 30, shortDescription: 80, promotionalText: 170, keywords: 100, description: 4000 };
+  const dir = path.join(root, 'store', 'listing');
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+  assert.ok(files.length >= I18n.LANGS.length, 'zu wenige Store-Texte');
+  for (const f of files) {
+    const j = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+    for (const [k, max] of Object.entries(LIMITS)) {
+      assert.ok(j[k] && [...j[k]].length <= max, `${f}: ${k} (${j[k] && [...j[k]].length}/${max})`);
+    }
+  }
+});
+
+test('Widget-Texte gibt es für jede Sprache', () => {
+  const nat = JSON.parse(read('tools/native-strings.json'));
+  assert.deepEqual(Object.keys(nat).sort(), [...I18n.LANGS].sort());
+});

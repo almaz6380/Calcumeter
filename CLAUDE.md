@@ -1,7 +1,7 @@
 # Calcumeter – notes for Claude
 
 Calculator web app (GitHub Pages) that is also wrapped as a store app with Capacitor 8 (like Mountain-Ride).
-The owner talks German: answer in German. UI in German and English.
+The owner talks German: answer in German. UI in 15 languages (German source, English fallback).
 
 ## Files
 - `index.html`, `style.css` – the whole UI. Colors only via tokens on `:root` (dark default, light under
@@ -13,9 +13,14 @@ The owner talks German: answer in German. UI in German and English.
   swipe/long-press gestures, haptics.
 - `currency.js` (favourites, rates from open.er-api.com, fallback Frankfurter/ECB, `REFERRAL` link slot, feeds the
   widget), `units.js`, `graph.js` (canvas), `programmer.js` (BigInt).
-- `i18n.js` – German is the source text; `EN` maps German → English. `t('deutscher Text')` in JS, static HTML is
-  translated by `apply()`. **Every new UI text needs an `EN` entry** (`test/i18n.test.js` checks this).
-  Numbers follow the language: de `1.234,5` and `log(8;2)`, en `1,234.5` and `log(8,2)`.
+- `i18n.js` – German is the source text; `EN` maps German → English, `lang/<code>.js` adds 13 more languages
+  (es fr it pt tr pl nl sv da ja ko zh-Hans zh-Hant) via `I18n.add(code, {deutsch: übersetzt})`, incl. unit names
+  (key = German unit name from `units.js`). Missing texts fall back to English. `t('deutscher Text')` in JS, static
+  HTML is translated by `apply()`. **Every new UI text needs an `EN` entry and an entry in every `lang/*.js`**
+  (`test/i18n.test.js` checks this). Numbers follow `LOCALES`: decimal-comma languages `1.234,5` and `log(8;2)`
+  (fr/pl/sv group with a space), decimal-point languages (en ja ko zh) `1,234.5` and `log(8,2)`.
+- Widget/shortcut texts for Android and iOS: edit `tools/native-strings.json`, then `python3 tools/native-strings.py`
+  (writes `res/values-*/widget_strings.xml`, the `L10n` tables in the Swift files and `CFBundleLocalizations`).
 - `native.js` – bridge to Capacitor (share, haptics, deep links `calcumeter://view/<view>` and `#<view>`,
   `widgetData`). `money.js` – AdMob banner (not in the calculator view) + rewarded video (24 h ad-free) +
   RevenueCat `no_ads`; test ids until release. Both do nothing on the web.
