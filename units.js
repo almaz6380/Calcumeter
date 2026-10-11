@@ -338,7 +338,14 @@
     window.addEventListener('resize', () => { if (!el.view.hidden) render(); });
 
     render();
-    return { show: render };
+    return {
+      show: render,
+      shareText() {
+        if (lastValue === null) return null;
+        const { from, to } = sel();
+        return `${el.amount.textContent} ${unitSym(prefs.cat, from)} = ${el.result.textContent} ${unitSym(prefs.cat, to)}`;
+      },
+    };
   }
 
   return { CATEGORIES, EN, convertUnit, formatValue, init };
