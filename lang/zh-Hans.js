@@ -24,7 +24,7 @@
   'Rund 160 Währungen mit Tageskursen': '约 160 种货币，每日更新汇率',
   'Einheiten': '单位',
   'Länge, Gewicht, Temperatur, Daten und mehr': '长度、重量、温度、数据等',
-  'Graph': '图形',
+  'Graph': '绘图',
   'Funktionen zeichnen und Werte ablesen': '绘制函数并读取数值',
   'Programmierer': '程序员',
   'HEX, DEC, OCT, BIN und Bitoperationen': 'HEX、DEC、OCT、BIN 和位运算',
