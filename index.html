@@ -15,6 +15,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="style.css">
+  <script>
+    try {
+      var t = JSON.parse(localStorage.getItem('calcumeter.settings') || '{}').theme;
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <div class="app">
@@ -35,10 +41,11 @@
     <main class="calculator">
       <header class="topbar">
         <h1 class="visually-hidden">Calcumeter</h1>
-        <div class="tabs" role="tablist" aria-label="Ansicht">
-          <button type="button" role="tab" id="tab-calc" data-view="calc" aria-selected="true" aria-controls="view-calc">Rechner</button>
-          <button type="button" role="tab" id="tab-fx" data-view="fx" aria-selected="false" aria-controls="view-fx">Währung</button>
-        </div>
+        <button type="button" class="view-switch" id="view-switch" aria-haspopup="dialog" aria-controls="menu-sheet" title="Bereich wechseln">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
+          <span id="view-switch-label">Rechner</span>
+          <svg class="chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+        </button>
         <div class="topbar-actions" id="calc-actions">
           <div class="seg sci-only" role="radiogroup" aria-label="Winkelmaß">
             <button type="button" role="radio" data-angle="deg" aria-checked="true">DEG</button>
@@ -56,7 +63,7 @@
         </div>
       </header>
 
-      <section class="view view-calc" id="view-calc" role="tabpanel" aria-labelledby="tab-calc">
+      <section class="view view-calc" id="view-calc" role="region" aria-label="Rechner">
         <div class="display" aria-live="polite">
           <div class="indicators">
             <button type="button" id="ind-mode" class="sci-only ind-btn" data-action="toggle-angle" title="Winkelmaß umschalten">DEG</button>
@@ -146,34 +153,32 @@
         </div>
       </section>
 
-      <section class="view view-fx" id="view-fx" role="tabpanel" aria-labelledby="tab-fx" hidden>
+      <section class="view view-conv view-fx" id="view-fx" role="region" aria-label="Währung" hidden>
         <div class="fx-info">
           <div class="fx-pair">
             <div class="fx-row from">
-              <label class="fx-cur">
+              <button type="button" class="fx-cur" data-pick="from" aria-label="Ausgangswährung wählen">
                 <span class="fx-badge" id="fx-from-badge" aria-hidden="true"></span>
                 <span class="fx-cur-text"><strong id="fx-from-code"></strong><small id="fx-from-name"></small></span>
-                <select id="fx-from" aria-label="Ausgangswährung"></select>
-              </label>
+              </button>
               <div class="fx-amount" id="fx-amount" role="textbox" aria-label="Betrag" tabindex="0"></div>
             </div>
             <button type="button" class="fx-swap" id="fx-swap" aria-label="Währungen tauschen" title="Tauschen">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>
             </button>
             <div class="fx-row to">
-              <label class="fx-cur">
+              <button type="button" class="fx-cur" data-pick="to" aria-label="Zielwährung wählen">
                 <span class="fx-badge" id="fx-to-badge" aria-hidden="true"></span>
                 <span class="fx-cur-text"><strong id="fx-to-code"></strong><small id="fx-to-name"></small></span>
-                <select id="fx-to" aria-label="Zielwährung"></select>
-              </label>
-              <output class="fx-amount" id="fx-result" for="fx-from fx-to"></output>
+              </button>
+              <output class="fx-amount" id="fx-result"></output>
             </div>
           </div>
           <div class="fx-meta">
             <span id="fx-rate"></span>
             <span id="fx-status-text">Kurse werden geladen …</span>
           </div>
-          <ul class="fx-list" id="fx-list" aria-label="Weitere Währungen"></ul>
+          <ul class="fx-list" id="fx-list" aria-label="Favoriten"></ul>
         </div>
 
         <div class="pad fxpad" role="group" aria-label="Betrag eingeben">
@@ -197,13 +202,206 @@
           <button type="button" class="key equals label" data-fxkey="to-calc" title="Ergebnis in den Rechner übernehmen">→ Rechner</button>
         </div>
       </section>
+
+      <section class="view view-conv view-units" id="view-units" role="region" aria-label="Einheiten" hidden>
+        <div class="fx-info">
+          <div class="cat-chips" id="unit-cats" role="group" aria-label="Kategorie"></div>
+          <div class="fx-pair">
+            <div class="fx-row from">
+              <button type="button" class="fx-cur" data-unitpick="from" aria-label="Ausgangseinheit wählen">
+                <span class="fx-badge unit-badge" id="unit-from-sym" aria-hidden="true"></span>
+                <span class="fx-cur-text"><strong id="unit-from-name"></strong></span>
+              </button>
+              <div class="fx-amount" id="unit-amount" role="textbox" aria-label="Wert" tabindex="0"></div>
+            </div>
+            <button type="button" class="fx-swap" id="unit-swap" aria-label="Einheiten tauschen" title="Tauschen">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M7 4 3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg>
+            </button>
+            <div class="fx-row to">
+              <button type="button" class="fx-cur" data-unitpick="to" aria-label="Zieleinheit wählen">
+                <span class="fx-badge unit-badge" id="unit-to-sym" aria-hidden="true"></span>
+                <span class="fx-cur-text"><strong id="unit-to-name"></strong></span>
+              </button>
+              <output class="fx-amount" id="unit-result"></output>
+            </div>
+          </div>
+          <div class="fx-meta"><span id="unit-rate"></span></div>
+          <ul class="fx-list" id="unit-list" aria-label="Weitere Einheiten"></ul>
+        </div>
+
+        <div class="pad fxpad" role="group" aria-label="Wert eingeben">
+          <button type="button" class="key" data-unitkey="7">7</button>
+          <button type="button" class="key" data-unitkey="8">8</button>
+          <button type="button" class="key" data-unitkey="9">9</button>
+          <button type="button" class="key util" data-unitkey="back" aria-label="Löschen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 5h11v14H9l-6-7z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m12 9 5 6m0-6-5 6"/></svg>
+          </button>
+          <button type="button" class="key" data-unitkey="4">4</button>
+          <button type="button" class="key" data-unitkey="5">5</button>
+          <button type="button" class="key" data-unitkey="6">6</button>
+          <button type="button" class="key util accent-text" data-unitkey="clear">C</button>
+          <button type="button" class="key" data-unitkey="1">1</button>
+          <button type="button" class="key" data-unitkey="2">2</button>
+          <button type="button" class="key" data-unitkey="3">3</button>
+          <button type="button" class="key util label" data-unitkey="ans" title="Letztes Rechner-Ergebnis übernehmen">Ans</button>
+          <button type="button" class="key" data-unitkey="," aria-label="Komma">,</button>
+          <button type="button" class="key" data-unitkey="0">0</button>
+          <button type="button" class="key small" data-unitkey="sign" aria-label="Vorzeichen wechseln">±</button>
+          <button type="button" class="key equals label" data-unitkey="to-calc" title="Ergebnis in den Rechner übernehmen">→ Rechner</button>
+        </div>
+      </section>
+
+      <section class="view view-graph" id="view-graph" role="region" aria-label="Funktionsplotter" hidden>
+        <div class="graph-side">
+          <div class="graph-fns">
+            <label class="graph-fn"><span class="graph-dot" style="background: var(--plot-1)" aria-hidden="true"></span><span class="graph-name">f₁(x) =</span>
+              <input class="graph-input" id="graph-f1" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="z. B. sin(x)"></label>
+            <label class="graph-fn"><span class="graph-dot" style="background: var(--plot-2)" aria-hidden="true"></span><span class="graph-name">f₂(x) =</span>
+              <input class="graph-input" id="graph-f2" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="z. B. x^2−1"></label>
+            <label class="graph-fn"><span class="graph-dot" style="background: var(--plot-3)" aria-hidden="true"></span><span class="graph-name">f₃(x) =</span>
+              <input class="graph-input" id="graph-f3" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="leer lassen oder eingeben"></label>
+          </div>
+          <div class="graph-bar" id="graph-bar" role="group" aria-label="Schnelleingabe">
+            <button type="button" data-gins="x">x</button>
+            <button type="button" data-gins="^">xʸ</button>
+            <button type="button" data-gins="(">(</button>
+            <button type="button" data-gins=")">)</button>
+            <button type="button" data-gins="sin(">sin</button>
+            <button type="button" data-gins="cos(">cos</button>
+            <button type="button" data-gins="tan(">tan</button>
+            <button type="button" data-gins="√(">√</button>
+            <button type="button" data-gins="ln(">ln</button>
+            <button type="button" data-gins="abs(">|x|</button>
+            <button type="button" data-gins="π">π</button>
+            <button type="button" data-gins="e">e</button>
+          </div>
+          <p class="graph-hint">Winkel im Bogenmaß · ziehen zum Verschieben, zwei Finger oder Mausrad zum Zoomen, tippen für Werte</p>
+        </div>
+        <div class="graph-wrap" id="graph-wrap">
+          <canvas id="graph-canvas" aria-label="Graph der eingegebenen Funktionen" role="img"></canvas>
+          <div class="graph-tip" id="graph-tip" hidden></div>
+          <div class="graph-zoom">
+            <button type="button" class="icon-btn" data-gzoom="in" aria-label="Vergrößern">+</button>
+            <button type="button" class="icon-btn" data-gzoom="out" aria-label="Verkleinern">−</button>
+            <button type="button" class="icon-btn" data-gzoom="reset" aria-label="Ansicht zurücksetzen">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view view-prog" id="view-prog" role="region" aria-label="Programmierer" hidden>
+        <div class="prog-display" id="prog-display">
+          <div class="prog-controls">
+            <button type="button" class="chip-btn" id="prog-width" title="Wortbreite wechseln">64 Bit</button>
+            <button type="button" class="chip-btn" id="prog-bitview" aria-pressed="false">Bits</button>
+          </div>
+          <div class="prog-expr" id="prog-expr" aria-live="polite"></div>
+          <div class="prog-bases" id="prog-bases" role="group" aria-label="Zahlensystem">
+            <button type="button" class="prog-base" data-base="16"><span class="pb-label">HEX</span><span class="pb-val"></span></button>
+            <button type="button" class="prog-base" data-base="10"><span class="pb-label">DEC</span><span class="pb-val"></span></button>
+            <button type="button" class="prog-base" data-base="8"><span class="pb-label">OCT</span><span class="pb-val"></span></button>
+            <button type="button" class="prog-base" data-base="2"><span class="pb-label">BIN</span><span class="pb-val"></span></button>
+          </div>
+          <div class="prog-bits" id="prog-bits" hidden></div>
+        </div>
+        <div class="pad prog" id="prog-pad" role="group" aria-label="Tastatur">
+          <button type="button" class="key hex" data-pkey="A">A</button>
+          <button type="button" class="key hex" data-pkey="B">B</button>
+          <button type="button" class="key hex" data-pkey="C">C</button>
+          <button type="button" class="key fn" data-pkey="&amp;">AND</button>
+          <button type="button" class="key fn" data-pkey="|">OR</button>
+          <button type="button" class="key util accent-text" data-pkey="clear">AC</button>
+
+          <button type="button" class="key hex" data-pkey="D">D</button>
+          <button type="button" class="key hex" data-pkey="E">E</button>
+          <button type="button" class="key hex" data-pkey="F">F</button>
+          <button type="button" class="key fn" data-pkey="^">XOR</button>
+          <button type="button" class="key fn" data-pkey="~">NOT</button>
+          <button type="button" class="key util" data-pkey="back" aria-label="Löschen">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 5h11v14H9l-6-7z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="m12 9 5 6m0-6-5 6"/></svg>
+          </button>
+
+          <button type="button" class="key" data-pkey="7">7</button>
+          <button type="button" class="key" data-pkey="8">8</button>
+          <button type="button" class="key" data-pkey="9">9</button>
+          <button type="button" class="key fn" data-pkey="&lt;&lt;">&lt;&lt;</button>
+          <button type="button" class="key fn" data-pkey="&gt;&gt;">&gt;&gt;</button>
+          <button type="button" class="key op" data-pkey="/">÷</button>
+
+          <button type="button" class="key" data-pkey="4">4</button>
+          <button type="button" class="key" data-pkey="5">5</button>
+          <button type="button" class="key" data-pkey="6">6</button>
+          <button type="button" class="key fn" data-pkey="(">(</button>
+          <button type="button" class="key fn" data-pkey=")">)</button>
+          <button type="button" class="key op" data-pkey="*">×</button>
+
+          <button type="button" class="key" data-pkey="1">1</button>
+          <button type="button" class="key" data-pkey="2">2</button>
+          <button type="button" class="key" data-pkey="3">3</button>
+          <button type="button" class="key fn" data-pkey="%">mod</button>
+          <button type="button" class="key fn" data-pkey="neg" aria-label="Vorzeichen wechseln">±</button>
+          <button type="button" class="key op" data-pkey="-">−</button>
+
+          <button type="button" class="key span3" data-pkey="0">0</button>
+          <button type="button" class="key equals span2" data-pkey="equals" aria-label="Ergebnis">=</button>
+          <button type="button" class="key op" data-pkey="+">+</button>
+        </div>
+      </section>
     </main>
   </div>
+
+
+  <dialog class="sheet menu-sheet" id="menu-sheet" aria-labelledby="menu-title">
+    <div class="sheet-inner">
+      <div class="sheet-head">
+        <h2 id="menu-title">Bereiche</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Schließen">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <nav class="view-list" aria-label="Bereiche">
+        <button type="button" class="view-item" data-view="calc">
+          <span class="vi-icon" aria-hidden="true">±</span><span class="vi-text"><strong>Rechner</strong><small>Grundrechenarten und wissenschaftliche Funktionen</small></span>
+        </button>
+        <button type="button" class="view-item" data-view="fx">
+          <span class="vi-icon" aria-hidden="true">€</span><span class="vi-text"><strong>Währung</strong><small>Rund 160 Währungen mit Tageskursen</small></span>
+        </button>
+        <button type="button" class="view-item" data-view="units">
+          <span class="vi-icon" aria-hidden="true">⇄</span><span class="vi-text"><strong>Einheiten</strong><small>Länge, Gewicht, Temperatur, Daten und mehr</small></span>
+        </button>
+        <button type="button" class="view-item" data-view="graph">
+          <span class="vi-icon" aria-hidden="true">ƒ</span><span class="vi-text"><strong>Graph</strong><small>Funktionen zeichnen und Werte ablesen</small></span>
+        </button>
+        <button type="button" class="view-item" data-view="prog">
+          <span class="vi-icon mono" aria-hidden="true">0x</span><span class="vi-text"><strong>Programmierer</strong><small>HEX, DEC, OCT, BIN und Bitoperationen</small></span>
+        </button>
+      </nav>
+      <h2 class="sheet-sub">Einstellungen</h2>
+      <div class="setting">
+        <span id="set-theme-label">Design</span>
+        <div class="seg" role="radiogroup" aria-labelledby="set-theme-label">
+          <button type="button" role="radio" data-theme-choice="auto" aria-checked="true">Auto</button>
+          <button type="button" role="radio" data-theme-choice="light" aria-checked="false">Hell</button>
+          <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">Dunkel</button>
+        </div>
+      </div>
+      <div class="setting">
+        <span id="set-vibrate-label">Vibration beim Tippen</span>
+        <button type="button" class="switch" id="set-vibrate" role="switch" aria-checked="true" aria-labelledby="set-vibrate-label"><span></span></button>
+      </div>
+      <p class="setting-hint">Tipp: Über die Anzeige wischen löscht die letzte Eingabe, AC lange drücken löscht auch den Speicher.</p>
+    </div>
+  </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="calculator.js"></script>
+  <script src="keypad.js"></script>
   <script src="currency.js"></script>
+  <script src="units.js"></script>
+  <script src="programmer.js"></script>
+  <script src="graph.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -5,6 +5,8 @@
   const { evaluate, format } = window.Calc;
 
   const STORAGE_KEY = 'calcumeter.state';
+  const SETTINGS_KEY = 'calcumeter.settings';
+  const VIEWS = { calc: 'Rechner', fx: 'Währung', units: 'Einheiten', graph: 'Graph', prog: 'Programmierer' };
   const HISTORY_LIMIT = 100;
 
   const state = {
@@ -37,6 +39,11 @@
     historyEmpty: $('#history-empty'),
     historyToggle: $('#history-toggle'),
     fxActions: $('#fx-actions'),
+    viewSwitch: $('#view-switch'),
+    viewSwitchLabel: $('#view-switch-label'),
+    menu: $('#menu-sheet'),
+    vibrate: $('#set-vibrate'),
+    themeColor: document.querySelector('meta[name="theme-color"]'),
     toast: $('#toast'),
     calculator: $('.calculator'),
     sciToggle: $('[data-action="toggle-sci"]'),
@@ -55,7 +62,7 @@
       if (typeof saved.memory === 'number') state.memory = saved.memory;
       if (typeof saved.ans === 'number') state.ans = saved.ans;
       if (Array.isArray(saved.history)) state.history = saved.history.slice(0, HISTORY_LIMIT);
-      if (saved.view === 'fx') state.view = 'fx';
+      if (saved.view in VIEWS) state.view = saved.view;
     } catch (_) { /* ohne Speicher weiterarbeiten */ }
   }
 
@@ -274,20 +281,71 @@
   }
 
   function setView(view) {
+    if (!(view in VIEWS)) view = 'calc';
     state.view = view;
-    const fx = view === 'fx';
-    els.viewCalc.hidden = fx;
-    els.viewFx.hidden = !fx;
-    els.calcActions.hidden = fx;
-    els.fxActions.hidden = !fx;
-    if (fx) toggleHistory(false);
-    document.querySelectorAll('[data-view]').forEach((b) => {
-      b.setAttribute('aria-selected', String(b.dataset.view === view));
+    for (const v of Object.keys(VIEWS)) $(`#view-${v}`).hidden = v !== view;
+    els.calcActions.hidden = view !== 'calc';
+    els.fxActions.hidden = view !== 'fx';
+    els.viewSwitchLabel.textContent = VIEWS[view];
+    els.calculator.dataset.view = view;
+    if (view !== 'calc') toggleHistory(false);
+    document.querySelectorAll('.view-item[data-view]').forEach((b) => {
+      if (b.dataset.view === view) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
     });
-    if (fx && fxView) fxView.show();
+    if (modules[view]) modules[view].show();
     save();
-    if (!fx) render();
+    if (view === 'calc') render();
   }
+
+  // ---------- Einstellungen ----------
+
+  const settings = { theme: 'auto', vibrate: true };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (_) { /* Standard */ }
+
+  function applySettings() {
+    const root = document.documentElement;
+    if (settings.theme === 'light' || settings.theme === 'dark') root.dataset.theme = settings.theme;
+    else delete root.dataset.theme;
+    document.querySelectorAll('[data-theme-choice]').forEach((b) => {
+      b.setAttribute('aria-checked', String(b.dataset.themeChoice === settings.theme));
+    });
+    els.vibrate.setAttribute('aria-checked', String(settings.vibrate));
+    window.Keypad.setHaptics(settings.vibrate);
+    els.themeColor.setAttribute('content', getComputedStyle(root).getPropertyValue('--ground').trim() || '#0E0F11');
+    if (modules.graph) modules.graph.redraw();
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) { /* ignorieren */ }
+  }
+
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => applySettings());
+
+  function openMenu() {
+    els.menu.showModal();
+    const current = els.menu.querySelector('[aria-current="page"]');
+    if (current) current.focus();
+  }
+
+  els.viewSwitch.addEventListener('click', openMenu);
+  els.menu.addEventListener('click', (e) => {
+    if (e.target === els.menu || e.target.closest('[data-close]')) return els.menu.close();
+    const item = e.target.closest('.view-item[data-view]');
+    if (item) {
+      e.stopPropagation();
+      els.menu.close();
+      setView(item.dataset.view);
+      return;
+    }
+    const theme = e.target.closest('[data-theme-choice]');
+    if (theme) {
+      settings.theme = theme.dataset.themeChoice;
+      applySettings();
+    }
+    if (e.target.closest('#set-vibrate')) {
+      settings.vibrate = !settings.vibrate;
+      applySettings();
+      window.Keypad.haptic();
+    }
+  });
 
   function toggleHistory(force) {
     const show = typeof force === 'boolean' ? force : els.history.hidden;
@@ -450,7 +508,7 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    if (state.view !== 'calc' || e.target.closest('input, select, textarea')) return;
+    if (state.view !== 'calc' || e.target.closest('input, select, textarea, dialog')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) {
       if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !window.getSelection().toString()) copyResult();
       return;
@@ -491,19 +549,46 @@
     render();
   });
 
-  let fxView = null;
-  if (window.Fx) {
-    fxView = window.Fx.init({
-      getAns: () => state.ans,
-      fitText,
-      useInCalc: (value) => {
-        setView('calc');
-        insert(asOperand(value));
-      },
-    });
+  // Gemeinsame Schnittstelle für die Bereiche
+  const hub = {
+    getAns: () => state.ans,
+    fitText,
+    toast,
+    pick: (opts) => window.Keypad.pick(opts),
+    useInCalc: (value) => {
+      setView('calc');
+      insert(asOperand(value));
+    },
+  };
+
+  const modules = {};
+  const mods = { fx: window.Fx, units: window.Units, prog: window.Prog, graph: window.Graph };
+  for (const [name, mod] of Object.entries(mods)) {
+    if (!mod) continue;
+    try {
+      modules[name] = mod.init(hub);
+    } catch (e) {
+      console.error(`Bereich ${name} konnte nicht starten`, e);
+    }
   }
 
+  // Vibration bei jeder Taste
+  document.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.key, .chip, .bit, .prog-base, .cat-chip')) window.Keypad.haptic();
+  });
+
+  // Gesten im Rechner: Wischen über die Anzeige löscht, AC lange drücken löscht alles
+  window.Keypad.onSwipe($('#view-calc .display'), backspace);
+  window.Keypad.onLongPress($('[data-action="clear"]'), () => {
+    clearAll();
+    state.memory = null;
+    save();
+    render();
+    toast('Alles gelöscht');
+  });
+
   load();
+  applySettings();
   render();
   renderHistory();
   setView(state.view);
