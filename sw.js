@@ -1,6 +1,6 @@
 /* Offline-Unterstützung: Netzwerk zuerst, Cache als Rückfall. */
-const CACHE = 'calcumeter-v3';
-const ASSETS = ['./', 'index.html', 'style.css', 'calculator.js', 'currency.js', 'app.js', 'icon.svg', 'manifest.webmanifest'];
+const CACHE = 'calcumeter-v4';
+const ASSETS = ['./', 'index.html', 'style.css', 'calculator.js', 'currency.js', 'app.js', 'icons/icon-192.png', 'icons/apple-touch-icon.png', 'icons/favicon-48.png', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
