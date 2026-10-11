@@ -15,8 +15,8 @@
     adsTesting: true,
     // Solange adsTesting true ist, liefert AdMob nur Testanzeigen – auch mit echten IDs.
     adUnits: {
-      // Android: echte IDs aus AdMob; Belohnt noch Googles Test-ID (TODO echte ID)
-      android: { banner: 'ca-app-pub-8860791993288062/7534440237', rewarded: 'ca-app-pub-3940256099942544/5224354917' },
+      // Android: echte IDs aus AdMob
+      android: { banner: 'ca-app-pub-8860791993288062/7534440237', rewarded: 'ca-app-pub-8860791993288062/2282113550' },
       // iOS: noch Googles Test-IDs (TODO echte IDs)
       ios: { banner: 'ca-app-pub-3940256099942544/2435281174', rewarded: 'ca-app-pub-3940256099942544/1712485313' },
     },
