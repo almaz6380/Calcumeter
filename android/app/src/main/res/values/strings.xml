@@ -4,6 +4,6 @@
     <string name="title_activity_main">Calcumeter</string>
     <string name="package_name">com.almaz6380.calcumeter</string>
     <string name="custom_url_scheme">com.almaz6380.calcumeter</string>
-    <!-- AdMob: Google-Test-ID; vor der Veröffentlichung durch die echte aus admob.google.com ersetzen -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <!-- AdMob-App-ID von Calcumeter (Android) -->
+    <string name="admob_app_id">ca-app-pub-8860791993288062~2030832115</string>
 </resources>
