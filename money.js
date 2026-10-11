@@ -20,7 +20,7 @@
       // iOS: echte IDs aus AdMob
       ios: { banner: 'ca-app-pub-8860791993288062/9282636174', rewarded: 'ca-app-pub-8860791993288062/7294856375' },
     },
-    revenueCatKey: { android: '', ios: 'appl_SPbNAZMgYLGETvdjDqTphLPTTsu' },   // öffentliche SDK-Keys von app.revenuecat.com (goog_… / appl_…)
+    revenueCatKey: { android: 'goog_VjFGcPNAjDUHlIJjHzcelStBVft', ios: 'appl_SPbNAZMgYLGETvdjDqTphLPTTsu' },   // öffentliche SDK-Keys von app.revenuecat.com (goog_… / appl_…)
     noAdsProduct: 'no_ads',
     rewardHours: 24,
   };
@@ -99,6 +99,9 @@
     if (IAP) {
       try {
         await IAP.configure({ apiKey: MONEY.revenueCatKey[N.platform] });
+        // schon gekauft (z. B. nach Neuinstallation)? Dann gleich werbefrei
+        const { customerInfo } = await IAP.getCustomerInfo();
+        if (owns(customerInfo)) { state.noAds = true; save(); }
         const res = await IAP.getProducts({ productIdentifiers: [MONEY.noAdsProduct], type: 'NON_SUBSCRIPTION' });
         product = (res.products || [])[0] || null;
       } catch (_) { /* ohne Kauf weiter */ }
@@ -147,13 +150,19 @@
     renderMenu();
   }
 
+  // Kauf „Werbefrei“ vorhanden? Entitlement no_ads oder der Einmalkauf selbst
+  function owns(info) {
+    if (!info) return false;
+    if (info.entitlements && info.entitlements.active && info.entitlements.active[MONEY.noAdsProduct]) return true;
+    return (info.nonSubscriptionTransactions || []).some((x) => String(x.productIdentifier).split(':')[0] === MONEY.noAdsProduct);
+  }
+
   // Apple verlangt einen Knopf zum Wiederherstellen von Käufen
   async function restore() {
     if (!IAP) return;
     try {
       const { customerInfo } = await IAP.restorePurchases();
-      const ids = new Set((customerInfo.nonSubscriptionTransactions || []).map((x) => x.productIdentifier));
-      if (ids.has(MONEY.noAdsProduct)) {
+      if (owns(customerInfo)) {
         state.noAds = true;
         save();
         await updateBanner();
