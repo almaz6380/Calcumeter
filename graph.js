@@ -22,15 +22,18 @@
     return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p;
   }
 
+  const locale = () => (typeof I18n !== 'undefined' ? I18n.locale() : { intl: 'de-DE', decimal: ',' });
+
   function fmt(v) {
     if (Math.abs(v) < 1e-12) return '0';
+    const L = locale();
     const abs = Math.abs(v);
-    if (abs >= 1e6 || abs < 1e-4) return v.toExponential(2).replace('.', ',').replace('e', 'E').replace('+', '').replace('-', '−');
-    return new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 6 }).format(v).replace('-', '−');
+    if (abs >= 1e6 || abs < 1e-4) return v.toExponential(2).replace('.', L.decimal).replace('e', 'E').replace('+', '').replace('-', '−');
+    return new Intl.NumberFormat(L.intl, { maximumSignificantDigits: 6 }).format(v).replace('-', '−');
   }
 
-  // Eingabe in deutscher Schreibweise für den Rechenkern
-  const toCalc = (text) => text.replace(/,/g, '.');
+  // Eingabe in der Schreibweise der Sprache für den Rechenkern (deutsch: Komma → Punkt)
+  const toCalc = (text) => (locale().decimal === ',' ? text.replace(/,/g, '.') : text);
 
   function init(hub) {
     const $ = (id) => document.getElementById(id);
@@ -66,7 +69,7 @@
         } catch (e) {
           input.classList.add('invalid');
           input.setAttribute('aria-invalid', 'true');
-          input.title = e.message;
+          input.title = typeof I18n !== 'undefined' ? I18n.t(e.message) : e.message;
           return null;
         }
       });

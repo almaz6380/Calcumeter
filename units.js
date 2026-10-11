@@ -5,11 +5,11 @@
  * Temperaturen brauchen eigene Umrechnungen (Nullpunkt verschoben).
  */
 (function (global, factory) {
-  const keypad = typeof module === 'object' && module.exports ? require('./keypad.js') : global.Keypad;
-  const api = factory(keypad);
+  const node = typeof module === 'object' && module.exports;
+  const api = factory(node ? require('./keypad.js') : global.Keypad, node ? require('./i18n.js') : global.I18n);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else global.Units = api;
-})(typeof self !== 'undefined' ? self : this, function (Keypad) {
+})(typeof self !== 'undefined' ? self : this, function (Keypad, I18nRef) {
   'use strict';
 
   const PREFS_KEY = 'calcumeter.units';
@@ -104,6 +104,27 @@
     },
   };
 
+  // Englische Namen (Kategorie, dann Einheiten)
+  const EN = {
+    length: ['Length', { mm: 'Millimetre', cm: 'Centimetre', m: 'Metre', km: 'Kilometre', um: 'Micrometre', in: 'Inch', ft: 'Foot', yd: 'Yard', mi: 'Mile', nmi: 'Nautical mile' }],
+    area: ['Area', { mm2: 'Square millimetre', cm2: 'Square centimetre', m2: 'Square metre', a: 'Are', ha: 'Hectare', km2: 'Square kilometre', in2: 'Square inch', ft2: 'Square foot', yd2: 'Square yard', ac: 'Acre', mi2: 'Square mile' }],
+    volume: ['Volume', { ml: 'Millilitre', cl: 'Centilitre', dl: 'Decilitre', l: 'Litre', m3: 'Cubic metre', cm3: 'Cubic centimetre', tsp: 'Teaspoon', tbsp: 'Tablespoon', cup: 'Cup (US)', floz: 'Fluid ounce (US)', pint: 'Pint (US)', usgal: 'Gallon (US)', ukgal: 'Gallon (UK)' }],
+    mass: ['Weight', { mg: 'Milligram', g: 'Gram', kg: 'Kilogram', t: 'Tonne', oz: 'Ounce', lb: 'Pound', st: 'Stone', ct: 'Carat' }],
+    temperature: ['Temperature', { C: 'Degree Celsius', F: 'Degree Fahrenheit', K: 'Kelvin' }],
+    speed: ['Speed', { ms: 'Metres per second', kmh: 'Kilometres per hour', mph: 'Miles per hour', kn: 'Knot', fts: 'Feet per second', mach: 'Mach (sea level)' }],
+    time: ['Time', { ms: 'Millisecond', s: 'Second', min: 'Minute', h: 'Hour', d: 'Day', wk: 'Week', mo: 'Month (avg.)', yr: 'Year (avg.)' }],
+    data: ['Data', { bit: 'Bit', B: 'Byte', kB: 'Kilobyte', MB: 'Megabyte', GB: 'Gigabyte', TB: 'Terabyte', KiB: 'Kibibyte', MiB: 'Mebibyte', GiB: 'Gibibyte', TiB: 'Tebibyte' }],
+    energy: ['Energy', { J: 'Joule', kJ: 'Kilojoule', cal: 'Calorie', kcal: 'Kilocalorie', Wh: 'Watt-hour', kWh: 'Kilowatt-hour', eV: 'Electronvolt', BTU: 'British thermal unit' }],
+    pressure: ['Pressure', { Pa: 'Pascal', hPa: 'Hectopascal', kPa: 'Kilopascal', bar: 'Bar', mbar: 'Millibar', atm: 'Atmosphere', psi: 'Pound per square inch', mmHg: 'Millimetre of mercury' }],
+  };
+  // englische Kurzzeichen, wo sie sich unterscheiden
+  const EN_SYM = { volume: { tsp: 'tsp', tbsp: 'tbsp' }, length: { nmi: 'nmi' }, time: { wk: 'wk', mo: 'mo', yr: 'yr' } };
+
+  const lang = () => I18nRef.getLang();
+  const catName = (cat) => (lang() === 'en' ? EN[cat][0] : CATEGORIES[cat].name);
+  const unitName = (cat, id) => (lang() === 'en' ? EN[cat][1][id] : CATEGORIES[cat].units[id][1]);
+  const unitSym = (cat, id) => (lang() === 'en' && EN_SYM[cat] && EN_SYM[cat][id]) || CATEGORIES[cat].units[id][0];
+
   // ---------- Reine Logik ----------
 
   function convertUnit(value, from, to, category) {
@@ -115,16 +136,17 @@
     return typeof t === 'object' ? t.from(base) : base / t;
   }
 
-  // Zahl deutsch formatieren, sehr große/kleine Werte als Zehnerpotenz
+  // Zahl in der Schreibweise der Sprache, sehr große/kleine Werte als Zehnerpotenz
   function formatValue(v) {
     if (!Number.isFinite(v)) return '–';
     if (v === 0) return '0';
+    const L = I18nRef.locale();
     const abs = Math.abs(v);
     if (abs >= 1e15 || abs < 1e-6) {
       const [m, e] = v.toExponential(6).split('e');
-      return `${m.replace(/\.?0+$/, '').replace('.', ',').replace('-', '−')}E${parseInt(e, 10)}`;
+      return `${m.replace(/\.?0+$/, '').replace('.', L.decimal).replace('-', '−')}E${parseInt(e, 10)}`;
     }
-    return new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 10 }).format(v).replace('-', '−');
+    return new Intl.NumberFormat(L.intl, { maximumSignificantDigits: 10 }).format(v).replace('-', '−');
   }
 
   // ---------- Oberfläche ----------
@@ -139,10 +161,13 @@
       rate: $('unit-rate'), list: $('unit-list'), swap: $('unit-swap'),
     };
     const { evaluate } = window.Calc;
+    const t = (str, vars) => I18nRef.t(str, vars);
 
     const prefs = { cat: 'length', amount: '1', sel: {} };
     try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')); } catch (_) { /* ohne Speicher */ }
     if (!CATEGORIES[prefs.cat]) prefs.cat = 'length';
+    // Betrag intern mit Punkt; frühere Versionen speicherten deutsch ("12,5")
+    prefs.amount = Keypad.normalizeAmount(String(prefs.amount));
     let lastValue = null;
 
     const save = () => {
@@ -169,13 +194,12 @@
       }
     }
 
-    // Kategorie-Chips einmal aufbauen
-    el.cats.replaceChildren(...Object.entries(CATEGORIES).map(([id, c]) => {
+    // Kategorie-Chips einmal aufbauen; die Namen setzt render() je nach Sprache
+    el.cats.replaceChildren(...Object.keys(CATEGORIES).map((id) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'cat-chip';
       b.dataset.cat = id;
-      b.textContent = c.name;
       return b;
     }));
 
@@ -192,39 +216,41 @@
         lastValue = convertUnit(value, from, to, prefs.cat);
         el.result.textContent = formatValue(lastValue);
       }
-      el.fromSym.textContent = cat.units[from][0];
-      el.toSym.textContent = cat.units[to][0];
-      el.fromName.textContent = cat.units[from][1];
-      el.toName.textContent = cat.units[to][1];
-      el.rate.textContent = prefs.cat === 'temperature'
-        ? `${formatValue(convertUnit(0, from, to, prefs.cat))} ${cat.units[to][0]} bei 0 ${cat.units[from][0]}`
-        : `1 ${cat.units[from][0]} = ${formatValue(convertUnit(1, from, to, prefs.cat))} ${cat.units[to][0]}`;
+      const c = prefs.cat;
+      el.fromSym.textContent = unitSym(c, from);
+      el.toSym.textContent = unitSym(c, to);
+      el.fromName.textContent = unitName(c, from);
+      el.toName.textContent = unitName(c, to);
+      el.rate.textContent = c === 'temperature'
+        ? `${formatValue(convertUnit(0, from, to, c))} ${unitSym(c, to)} ${t('bei')} 0 ${unitSym(c, from)}`
+        : `1 ${unitSym(c, from)} = ${formatValue(convertUnit(1, from, to, c))} ${unitSym(c, to)}`;
 
       el.cats.querySelectorAll('[data-cat]').forEach((b) => {
+        b.textContent = catName(b.dataset.cat);
         b.setAttribute('aria-pressed', String(b.dataset.cat === prefs.cat));
       });
 
       const base = error ? 0 : value;
       el.list.replaceChildren(...Object.entries(cat.units)
         .filter(([id]) => id !== from && id !== to)
-        .map(([id, u]) => {
+        .map(([id]) => {
           const li = document.createElement('li');
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'fx-li';
           btn.dataset.unit = id;
-          btn.title = `${u[1]} als Zieleinheit wählen`;
+          btn.title = t('{name} als Zieleinheit wählen', { name: unitName(c, id) });
           const left = document.createElement('span');
           const sym = document.createElement('strong');
           sym.className = 'fx-li-code';
-          sym.textContent = u[0];
+          sym.textContent = unitSym(c, id);
           const name = document.createElement('span');
           name.className = 'fx-li-name';
-          name.textContent = u[1];
+          name.textContent = unitName(c, id);
           left.append(sym, name);
           const right = document.createElement('span');
           right.className = 'fx-li-val';
-          right.textContent = `${formatValue(convertUnit(base, from, id, prefs.cat))} ${u[0]}`;
+          right.textContent = `${formatValue(convertUnit(base, from, id, c))} ${unitSym(c, id)}`;
           btn.append(left, right);
           li.append(btn);
           return li;
@@ -239,9 +265,10 @@
     async function choose(which) {
       const cat = CATEGORIES[prefs.cat];
       const s = sel();
+      const name = catName(prefs.cat);
       const value = await hub.pick({
-        title: which === 'from' ? `${cat.name}: von` : `${cat.name}: nach`,
-        items: Object.entries(cat.units).map(([id, u]) => ({ value: id, label: u[1], sub: u[0], group: cat.name })),
+        title: which === 'from' ? t('{name}: von', { name }) : t('{name}: nach', { name }),
+        items: Object.keys(cat.units).map((id) => ({ value: id, label: unitName(prefs.cat, id), sub: unitSym(prefs.cat, id), group: name })),
         current: s[which],
         searchable: false,
       });
@@ -259,10 +286,10 @@
 
     function press(key) {
       if (key === 'ans') {
-        setAmount(String(hub.getAns()).replace('.', ','));
+        setAmount(String(hub.getAns()));
       } else if (key === 'equals') {
         const { value, error } = amountValue();
-        if (!error) setAmount(String(Math.round(value * 1e9) / 1e9).replace('.', ','));
+        if (!error) setAmount(String(Math.round(value * 1e9) / 1e9));
       } else if (key === 'to-calc') {
         if (lastValue !== null) hub.useInCalc(Number(lastValue.toPrecision(12)));
       } else {
@@ -314,5 +341,5 @@
     return { show: render };
   }
 
-  return { CATEGORIES, convertUnit, formatValue, init };
+  return { CATEGORIES, EN, convertUnit, formatValue, init };
 });

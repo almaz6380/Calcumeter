@@ -78,18 +78,30 @@
 
   const ctx = () => ({ angle: state.angle, ans: state.ans });
 
-  // Die Anzeige rechnet deutsch: Komma als Dezimalzeichen, ";" trennt Funktionsargumente.
-  const toCalc = (expr) => expr.replace(/,/g, '.');
+  // Die Eingabe steht in der Schreibweise der Sprache:
+  // deutsch "1,5" und "log(8;2)", englisch "1.5" und "log(8,2)".
+  const I18n = window.I18n;
+  const t = (str, vars) => I18n.t(str, vars);
+  const L = () => I18n.locale();
+  const toCalc = (expr) => (L().decimal === ',' ? expr.replace(/,/g, '.') : expr);
+
+  // Rechnung von einer Schreibweise in die andere umschreiben
+  function convertExpr(expr, from, to) {
+    if (from === to) return expr;
+    return from === 'de'
+      ? expr.replace(/,/g, '\u0001').replace(/;/g, ',').replace(/\u0001/g, '.')
+      : expr.replace(/,/g, ';').replace(/\./g, ',');
+  }
 
   // Zahl für die Eingabezeile, z. B. "−1234,5"
-  const show = (value) => format(value).replace('.', ',').replace(/^-/, '−');
+  const show = (value) => format(value).replace('.', L().decimal).replace(/^-/, '−');
 
-  // Zahl für die große Anzeige, mit Tausenderpunkten: "−1.234,5"
+  // Zahl für die große Anzeige, mit Tausendertrennung: "−1.234,5" bzw. "−1,234.5"
   function pretty(value) {
     const s = show(value);
     const m = /^(−?)(\d+)(.*)$/.exec(s);
     if (!m || m[3].includes('E')) return s;
-    return m[1] + m[2].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + m[3];
+    return m[1] + m[2].replace(/\B(?=(\d{3})+(?!\d))/g, L().group) + m[3];
   }
 
   // In die Eingabe einfügen, negative Zahlen geklammert
@@ -111,7 +123,7 @@
     try {
       return { value: evaluate(toCalc(expr), ctx()) };
     } catch (e) {
-      return { error: e.name === 'CalcError' ? e.message : 'Fehler' };
+      return { error: e.name === 'CalcError' ? e.message : 'Fehler' };   // deutsch; übersetzt in render()
     }
   }
 
@@ -148,10 +160,11 @@
       state.expr = state.expr.slice(0, -1);
     }
     if (state.expr === '' && /^[+×÷^²³!%]$|^⁻¹$/.test(text)) state.expr = 'Ans';
-    if (text === ',') {
-      // nur ein Komma pro Zahl; "0," statt "," am Zahlanfang
-      if (/\d*,\d*$/.test(state.expr) && /,\d*$/.test(state.expr)) return render();
-      if (!/\d$/.test(state.expr)) text = '0,';
+    const dec = L().decimal;
+    if (text === dec) {
+      // nur ein Dezimalzeichen pro Zahl; "0," statt "," am Zahlanfang
+      if (new RegExp(`\\${dec}\\d*$`).test(state.expr)) return render();
+      if (!/\d$/.test(state.expr)) text = `0${dec}`;
     }
     state.expr += text;
     if (state.second || state.hyp) {
@@ -217,7 +230,7 @@
       return;
     }
     const closed = state.expr + ')'.repeat(openParens(state.expr));
-    state.history.unshift({ expr: closed, result: format(value), value });
+    state.history.unshift({ expr: closed, result: format(value), value, lang: I18n.getLang() });
     state.history.length = Math.min(state.history.length, HISTORY_LIMIT);
     state.ans = value;
     state.expr = show(value);
@@ -242,7 +255,7 @@
     switch (action) {
       case 'mc':
         state.memory = null;
-        toast('Speicher gelöscht');
+        toast(t('Speicher gelöscht'));
         break;
       case 'mr':
         if (state.memory === null) return;
@@ -286,7 +299,7 @@
     for (const v of Object.keys(VIEWS)) $(`#view-${v}`).hidden = v !== view;
     els.calcActions.hidden = view !== 'calc';
     els.fxActions.hidden = view !== 'fx';
-    els.viewSwitchLabel.textContent = VIEWS[view];
+    els.viewSwitchLabel.textContent = t(VIEWS[view]);
     els.calculator.dataset.view = view;
     if (view !== 'calc') toggleHistory(false);
     document.querySelectorAll('.view-item[data-view]').forEach((b) => {
@@ -302,6 +315,22 @@
 
   const settings = { theme: 'auto', vibrate: true };
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (_) { /* Standard */ }
+  if (!['auto', 'de', 'en'].includes(settings.lang)) settings.lang = 'auto';
+  I18n.setLang(settings.lang === 'auto' ? null : settings.lang);
+
+  // Nach einem Sprachwechsel: Eingabe umschreiben und alle Texte neu setzen
+  function refreshTexts(prevLang) {
+    const now = I18n.getLang();
+    if (prevLang && prevLang !== now) {
+      state.expr = convertExpr(state.expr, prevLang, now);
+      if (state.lastExpr) state.lastExpr = convertExpr(state.lastExpr, prevLang, now);
+    }
+    els.viewSwitchLabel.textContent = t(VIEWS[state.view]);
+    document.querySelectorAll('[data-fxkey="dec"], [data-unitkey="dec"]').forEach((b) => { b.textContent = L().decimal; });
+    render();
+    renderHistory();
+    if (modules[state.view]) modules[state.view].show();
+  }
 
   function applySettings() {
     const root = document.documentElement;
@@ -309,6 +338,9 @@
     else delete root.dataset.theme;
     document.querySelectorAll('[data-theme-choice]').forEach((b) => {
       b.setAttribute('aria-checked', String(b.dataset.themeChoice === settings.theme));
+    });
+    document.querySelectorAll('[data-lang-choice]').forEach((b) => {
+      b.setAttribute('aria-checked', String(b.dataset.langChoice === settings.lang));
     });
     els.vibrate.setAttribute('aria-checked', String(settings.vibrate));
     window.Keypad.setHaptics(settings.vibrate);
@@ -335,6 +367,14 @@
       setView(item.dataset.view);
       return;
     }
+    const langBtn = e.target.closest('[data-lang-choice]');
+    if (langBtn) {
+      const prev = I18n.getLang();
+      settings.lang = langBtn.dataset.langChoice;
+      I18n.setLang(settings.lang === 'auto' ? null : settings.lang);
+      applySettings();
+      refreshTexts(prev);
+    }
     const theme = e.target.closest('[data-theme-choice]');
     if (theme) {
       settings.theme = theme.dataset.themeChoice;
@@ -359,9 +399,9 @@
     if (value === undefined || state.expr.trim() === '') return;
     try {
       await navigator.clipboard.writeText(show(value).replace('−', '-'));
-      toast('Kopiert');
+      toast(t('Kopiert'));
     } catch (_) {
-      toast('Kopieren nicht möglich');
+      toast(t('Kopieren nicht möglich'));
     }
   }
 
@@ -369,7 +409,7 @@
 
   function render() {
     // Eingabezeile mit "Geister"-Klammern, die automatisch geschlossen werden
-    const shown = state.justEvaluated ? `${state.lastExpr} =` : state.expr;
+    const shown = state.justEvaluated ? `${state.lastExpr} =` : state.expr;   // lastExpr folgt der Sprache (siehe setLanguage)
     els.expression.textContent = shown;
     if (!state.justEvaluated) {
       const missing = openParens(state.expr);
@@ -389,7 +429,7 @@
     const r = els.result;
     r.classList.remove('preview', 'error');
     if (state.error) {
-      r.textContent = state.error;
+      r.textContent = t(state.error);
       r.classList.add('error');
     } else if (state.justEvaluated) {
       r.textContent = pretty(state.ans);
@@ -407,7 +447,9 @@
     const sci = sciVisible();
     els.calculator.classList.toggle('sci-on', sci);
     els.sciToggle.setAttribute('aria-pressed', String(sci));
-    els.sciToggle.setAttribute('aria-label', sci ? 'Wissenschaftliche Funktionen ausblenden' : 'Wissenschaftliche Funktionen einblenden');
+    els.sciToggle.setAttribute('aria-label', t(sci ? 'Wissenschaftliche Funktionen ausblenden' : 'Wissenschaftliche Funktionen einblenden'));
+    document.querySelectorAll('[data-action="decimal"]').forEach((b) => { b.textContent = L().decimal; });
+    document.querySelectorAll('[data-action="argsep"]').forEach((b) => { b.textContent = L().argSep; });
     els.indMode.textContent = state.angle.toUpperCase();
     els.ind2nd.hidden = !state.second;
     els.indHyp.hidden = !state.hyp;
@@ -431,13 +473,13 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.dataset.historyIndex = String(i);
-      btn.title = 'Ergebnis übernehmen (Umschalt+Klick: Rechnung übernehmen)';
+      btn.title = t('Ergebnis übernehmen (Umschalt+Klick: Rechnung übernehmen)');
       const ex = document.createElement('span');
       ex.className = 'h-expr';
-      ex.textContent = `${h.expr} =`;
+      ex.textContent = `${convertExpr(h.expr, h.lang || 'de', I18n.getLang())} =`;
       const res = document.createElement('span');
       res.className = 'h-res';
-      res.textContent = typeof h.value === 'number' ? pretty(h.value) : h.result.replace('.', ',').replace(/^-/, '−');
+      res.textContent = typeof h.value === 'number' ? pretty(h.value) : h.result.replace('.', L().decimal).replace(/^-/, '−');
       btn.append(ex, res);
       li.append(btn);
       return li;
@@ -450,10 +492,10 @@
     if (!h) return;
     state.error = null;
     if (takeExpression) {
-      state.expr = h.expr;
+      state.expr = convertExpr(h.expr, h.lang || 'de', I18n.getLang());
       state.justEvaluated = false;
     } else {
-      insert(typeof h.value === 'number' ? asOperand(h.value) : h.result.replace('.', ',').replace(/^-(.*)$/, '(−$1)'));
+      insert(typeof h.value === 'number' ? asOperand(h.value) : h.result.replace('.', L().decimal).replace(/^-(.*)$/, '(−$1)'));
       return;
     }
     render();
@@ -472,6 +514,8 @@
       case 'toggle-history': toggleHistory(); break;
       case 'toggle-sci': toggleSci(); break;
       case 'toggle-angle': setAngle(state.angle === 'deg' ? 'rad' : 'deg'); break;
+      case 'decimal': insert(L().decimal); break;
+      case 'argsep': insert(L().argSep); break;
       case 'clear-history':
         state.history = [];
         save();
@@ -495,10 +539,13 @@
     else if (btn === els.result) copyResult();
   });
 
-  const KEY_MAP = {
-    '*': '×', '/': '÷', '-': '−', '+': '+', '^': '^', '(': '(', ')': ')',
-    '%': '%', '!': '!', '.': ',', ',': ',', ';': ';', 'π': 'π',
+  const KEY_BASE = {
+    '*': '×', '/': '÷', '-': '−', '+': '+', '^': '^', '(': '(', ')': ')', '%': '%', '!': '!', 'π': 'π',
   };
+  // Deutsch: Punkt und Komma tippen beide ein Komma, ";" trennt Argumente. Englisch: "." und ",".
+  const keyMap = () => (L().decimal === ','
+    ? { ...KEY_BASE, '.': ',', ',': ',', ';': ';' }
+    : { ...KEY_BASE, '.': '.', ',': ',', ';': ',' });
 
   function flash(selector) {
     const btn = document.querySelector(selector);
@@ -517,9 +564,9 @@
     if (/^[0-9]$/.test(k)) {
       insert(k);
       flash(`[data-insert="${k}"]`);
-    } else if (KEY_MAP[k]) {
-      insert(KEY_MAP[k]);
-      flash(`[data-insert="${CSS.escape(KEY_MAP[k])}"]`);
+    } else if (keyMap()[k]) {
+      insert(keyMap()[k]);
+      flash(`[data-insert="${CSS.escape(keyMap()[k])}"]`);
     } else if (k === 'Enter' || k === '=') {
       equals();
       flash('[data-action="equals"]');
@@ -584,11 +631,12 @@
     state.memory = null;
     save();
     render();
-    toast('Alles gelöscht');
+    toast(t('Alles gelöscht'));
   });
 
   load();
   applySettings();
+  refreshTexts();
   render();
   renderHistory();
   setView(state.view);
@@ -596,7 +644,8 @@
   window.addEventListener('resize', () => { if (state.view === 'calc') render(); });
   if (document.fonts) document.fonts.ready.then(() => render());
 
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  const isApp = Boolean(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if (!isApp && 'serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 })();

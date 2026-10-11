@@ -11,9 +11,7 @@
   <link rel="icon" href="icons/favicon-48.png" type="image/png" sizes="48x48">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
   <link rel="stylesheet" href="style.css">
   <script>
     try {
@@ -111,7 +109,7 @@
 
             <button type="button" class="key fn" data-insert="(">(</button>
             <button type="button" class="key fn" data-insert=")">)</button>
-            <button type="button" class="key fn" data-insert=";" title="Trennt Funktionsargumente, z. B. log(8;2)">;</button>
+            <button type="button" class="key fn" data-action="argsep" title="Trennt Funktionsargumente, z. B. log(8;2)">;</button>
             <button type="button" class="key fn" data-insert=" mod ">mod</button>
             <button type="button" class="key fn" data-insert="π">π</button>
 
@@ -147,7 +145,7 @@
 
             <button type="button" class="key small" data-action="sign" aria-label="Vorzeichen wechseln">±</button>
             <button type="button" class="key" data-insert="0">0</button>
-            <button type="button" class="key" data-insert="," aria-label="Komma">,</button>
+            <button type="button" class="key" data-action="decimal" aria-label="Komma">,</button>
             <button type="button" class="key equals" data-action="equals" aria-label="Ergebnis">=</button>
           </div>
         </div>
@@ -196,7 +194,7 @@
           <button type="button" class="key" data-fxkey="2">2</button>
           <button type="button" class="key" data-fxkey="3">3</button>
           <button type="button" class="key util label" data-fxkey="ans" title="Letztes Rechner-Ergebnis übernehmen">Ans</button>
-          <button type="button" class="key" data-fxkey="," aria-label="Komma">,</button>
+          <button type="button" class="key" data-fxkey="dec" aria-label="Komma">,</button>
           <button type="button" class="key" data-fxkey="0">0</button>
           <button type="button" class="key" data-fxkey="00">00</button>
           <button type="button" class="key equals label" data-fxkey="to-calc" title="Ergebnis in den Rechner übernehmen">→ Rechner</button>
@@ -244,7 +242,7 @@
           <button type="button" class="key" data-unitkey="2">2</button>
           <button type="button" class="key" data-unitkey="3">3</button>
           <button type="button" class="key util label" data-unitkey="ans" title="Letztes Rechner-Ergebnis übernehmen">Ans</button>
-          <button type="button" class="key" data-unitkey="," aria-label="Komma">,</button>
+          <button type="button" class="key" data-unitkey="dec" aria-label="Komma">,</button>
           <button type="button" class="key" data-unitkey="0">0</button>
           <button type="button" class="key small" data-unitkey="sign" aria-label="Vorzeichen wechseln">±</button>
           <button type="button" class="key equals label" data-unitkey="to-calc" title="Ergebnis in den Rechner übernehmen">→ Rechner</button>
@@ -387,6 +385,14 @@
         </div>
       </div>
       <div class="setting">
+        <span id="set-lang-label">Sprache</span>
+        <div class="seg" role="radiogroup" aria-labelledby="set-lang-label">
+          <button type="button" role="radio" data-lang-choice="auto" aria-checked="true">Auto</button>
+          <button type="button" role="radio" data-lang-choice="de" aria-checked="false" lang="de">Deutsch</button>
+          <button type="button" role="radio" data-lang-choice="en" aria-checked="false" lang="en">English</button>
+        </div>
+      </div>
+      <div class="setting">
         <span id="set-vibrate-label">Vibration beim Tippen</span>
         <button type="button" class="switch" id="set-vibrate" role="switch" aria-checked="true" aria-labelledby="set-vibrate-label"><span></span></button>
       </div>
@@ -396,6 +402,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="i18n.js"></script>
   <script src="calculator.js"></script>
   <script src="keypad.js"></script>
   <script src="currency.js"></script>

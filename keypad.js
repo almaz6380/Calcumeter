@@ -5,19 +5,28 @@
  * Gesten (Wischen, langes Drücken) und Vibration.
  */
 (function (global, factory) {
-  const api = factory();
+  const i18n = typeof module === 'object' && module.exports ? require('./i18n.js') : global.I18n;
+  const api = factory(i18n);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else global.Keypad = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (I18n) {
   'use strict';
 
-  // ---------- Betragseingabe ----------
+  const t = (s, vars) => I18n.t(s, vars);
 
-  // Beim Tippen mit Tausenderpunkten zeigen: "-12345,6" → "−12.345,6"
+  // ---------- Betragseingabe ----------
+  // Beträge werden intern immer mit Punkt als Dezimalzeichen gespeichert ("1234.5");
+  // angezeigt werden sie in der Schreibweise der gewählten Sprache.
+
+  // Beim Tippen mit Tausendertrennung zeigen: "-12345.6" → "−12.345,6" (de) bzw. "−12,345.6" (en)
   function groupTyped(text) {
-    const m = /^(-?)(\d*)(,\d*)?$/.exec(text);
-    if (!m) return text.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
-    return (m[1] ? '−' : '') + (m[2] || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (m[3] || '');
+    const L = I18n.locale();
+    const m = /^(-?)(\d*)(\.\d*)?$/.exec(text);
+    if (!m) {
+      return text.replace(/\./g, L.decimal).replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
+    }
+    return (m[1] ? '−' : '') + (m[2] || '0').replace(/\B(?=(\d{3})+(?!\d))/g, L.group)
+      + (m[3] ? L.decimal + m[3].slice(1) : '');
   }
 
   // Eine Taste auf den Betragstext anwenden und den neuen Text liefern
@@ -25,9 +34,9 @@
     const a = text === '0' ? '' : text;
     let out;
     if (/^\d+$/.test(key)) out = a === '' && key === '00' ? '0' : a + key;
-    else if (key === ',') {
-      if (/,\d*$/.test(a)) return text;
-      out = `${/\d$/.test(a) ? a : `${a}0`},`;
+    else if (key === 'dec') {
+      if (/\.\d*$/.test(a)) return text;
+      out = `${/\d$/.test(a) ? a : `${a}0`}.`;
     } else if (/^[+\-*/()]$/.test(key)) out = (a || '0') + key;
     else if (key === 'back') out = a.slice(0, -1);
     else if (key === 'clear') out = '';
@@ -36,7 +45,7 @@
     return out.slice(0, max);
   }
 
-  // Deutsche Schreibweise für den Rechenkern: "1.234,50" → "1234.50"
+  // Deutsche Schreibweise (frühere Versionen) für den Rechenkern: "1.234,50" → "1234.50"
   function normalizeAmount(text) {
     let t = String(text).replace(/\s/g, '');
     if (t.includes(',')) t = t.replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(/,/g, '.');
@@ -47,7 +56,7 @@
   function amountKeyFromEvent(e) {
     const k = e.key;
     if (/^[0-9]$/.test(k) || /^[+\-*/()]$/.test(k)) return k;
-    if (k === ',' || k === '.') return ',';
+    if (k === ',' || k === '.') return 'dec';
     if (k === 'Backspace') return 'back';
     if (k === 'Escape' || k === 'Delete') return 'clear';
     if (k === 'Enter' || k === '=') return 'equals';
@@ -59,7 +68,9 @@
   let hapticsOn = true;
   const setHaptics = (on) => { hapticsOn = Boolean(on); };
   function haptic() {
-    if (hapticsOn && typeof navigator !== 'undefined' && navigator.vibrate) {
+    if (!hapticsOn) return;
+    if (nativeHaptic) { nativeHaptic(); return; }
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try { navigator.vibrate(8); } catch (_) { /* nicht unterstützt */ }
     }
   }
@@ -127,11 +138,11 @@
       <div class="sheet-inner">
         <div class="sheet-head">
           <h2 id="picker-title"></h2>
-          <button type="button" class="icon-btn" data-close aria-label="Schließen">
+          <button type="button" class="icon-btn" data-close>
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
           </button>
         </div>
-        <input type="search" class="picker-search" placeholder="Suchen …" aria-label="Suchen" autocomplete="off" spellcheck="false">
+        <input type="search" class="picker-search" autocomplete="off" spellcheck="false">
         <div class="picker-list" role="listbox"></div>
       </div>`;
     document.body.append(dialog);
@@ -220,7 +231,7 @@
     if (!count) {
       const empty = document.createElement('p');
       empty.className = 'picker-empty';
-      empty.textContent = 'Nichts gefunden.';
+      empty.textContent = t('Nichts gefunden.');
       frag.append(empty);
     }
     p.list.replaceChildren(frag);
@@ -231,6 +242,9 @@
     if (!picker) picker = buildPicker();
     const p = picker;
     p.title.textContent = title;
+    p.dialog.querySelector('[data-close]').setAttribute('aria-label', t('Schließen'));
+    p.search.placeholder = t('Suchen …');
+    p.search.setAttribute('aria-label', t('Suchen …'));
     p.items = items;
     p.groups = groups || [...new Set(items.map((it) => it.group))];
     p.current = current;
@@ -253,5 +267,9 @@
     });
   }
 
-  return { groupTyped, editAmount, normalizeAmount, amountKeyFromEvent, haptic, setHaptics, onSwipe, onLongPress, pick };
+  // Vibration: in der Store-App über das native Plugin (iPhones kennen navigator.vibrate nicht)
+  let nativeHaptic = null;
+  const setNativeHaptic = (fn) => { nativeHaptic = fn; };
+
+  return { setNativeHaptic, groupTyped, editAmount, normalizeAmount, amountKeyFromEvent, haptic, setHaptics, onSwipe, onLongPress, pick };
 });

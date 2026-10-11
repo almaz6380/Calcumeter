@@ -97,6 +97,8 @@
       swap: $('fx-swap'), refresh: $('fx-refresh'),
     };
     const { evaluate } = window.Calc;
+    const t = (str, vars) => window.I18n.t(str, vars);
+    const intl = () => window.I18n.locale().intl;
 
     let data = FALLBACK;
     let offline = false;
@@ -109,24 +111,26 @@
       if (saved && saved.rates) data = saved;
       Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}'));
     } catch (_) { /* ohne Speicher weiter */ }
-    // ältere Versionen speicherten den Betrag als freien Text, z. B. "12.5"
-    prefs.amount = String(prefs.amount);
-    prefs.amount = prefs.amount.includes(',') ? prefs.amount.replace(/\./g, '') : prefs.amount.replace(/\./g, ',');
+    // Betrag intern mit Punkt; frühere Versionen speicherten deutsch ("12,5")
+    prefs.amount = normalizeAmount(String(prefs.amount));
     if (!Array.isArray(prefs.favorites)) prefs.favorites = DEFAULT_FAVORITES.slice();
 
     const savePrefs = () => {
       try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) { /* ignorieren */ }
     };
 
-    let names;
-    try { names = new Intl.DisplayNames(['de'], { type: 'currency' }); } catch (_) { names = null; }
+    const nameCache = {};
     const nameOf = (code) => {
-      try { return (names && names.of(code)) || code; } catch (_) { return code; }
+      const lang = window.I18n.getLang();
+      try {
+        if (!nameCache[lang]) nameCache[lang] = new Intl.DisplayNames([lang], { type: 'currency' });
+        return nameCache[lang].of(code) || code;
+      } catch (_) { return code; }
     };
 
     const symbolOf = (code) => {
       try {
-        const part = new Intl.NumberFormat('de-DE', { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' })
+        const part = new Intl.NumberFormat(intl(), { style: 'currency', currency: code, currencyDisplay: 'narrowSymbol' })
           .formatToParts(0).find((p) => p.type === 'currency');
         return part ? part.value : code;
       } catch (_) { return code; }
@@ -134,23 +138,23 @@
 
     const money = (value, code) => {
       try {
-        return new Intl.NumberFormat('de-DE', { style: 'currency', currency: code }).format(value);
+        return new Intl.NumberFormat(intl(), { style: 'currency', currency: code }).format(value);
       } catch (_) {
-        return `${new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 }).format(value)} ${code}`;
+        return `${new Intl.NumberFormat(intl(), { maximumFractionDigits: 2 }).format(value)} ${code}`;
       }
     };
     const plain = (value, code) => {
       if (value !== 0 && Math.abs(value) < 0.01) {
-        return new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 4 }).format(value);
+        return new Intl.NumberFormat(intl(), { maximumSignificantDigits: 4 }).format(value);
       }
       let frac = 2;
       try {
-        frac = new Intl.NumberFormat('de-DE', { style: 'currency', currency: code })
+        frac = new Intl.NumberFormat(intl(), { style: 'currency', currency: code })
           .resolvedOptions().maximumFractionDigits;
       } catch (_) { /* Standard: 2 Nachkommastellen */ }
-      return new Intl.NumberFormat('de-DE', { minimumFractionDigits: frac, maximumFractionDigits: frac }).format(value);
+      return new Intl.NumberFormat(intl(), { minimumFractionDigits: frac, maximumFractionDigits: frac }).format(value);
     };
-    const rateFmt = new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 5 });
+    const rateFmt = { format: (v) => new Intl.NumberFormat(intl(), { maximumSignificantDigits: 5 }).format(v) };
 
     function ensureKnown() {
       if (!(prefs.from in data.rates)) prefs.from = 'EUR';
@@ -180,7 +184,7 @@
       btn.type = 'button';
       btn.className = 'fx-li';
       btn.dataset.code = c;
-      btn.title = `${c} als Zielwährung wählen`;
+      btn.title = t('{code} als Zielwährung wählen', { code: c });
       const left = document.createElement('span');
       const code = document.createElement('strong');
       code.className = 'fx-li-code';
@@ -197,8 +201,8 @@
       star.type = 'button';
       star.className = 'fx-star';
       star.dataset.unfav = c;
-      star.setAttribute('aria-label', `${c} aus den Favoriten entfernen`);
-      star.title = 'Aus Favoriten entfernen';
+      star.setAttribute('aria-label', t('{code} aus den Favoriten entfernen', { code: c }));
+      star.title = t('Aus Favoriten entfernen');
       star.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>';
       li.append(btn, star);
       return li;
@@ -234,15 +238,15 @@
       const add = document.createElement('button');
       add.type = 'button';
       add.className = 'fx-add';
-      add.textContent = '+ Währung hinzufügen';
+      add.textContent = t('+ Währung hinzufügen');
       addLi.append(add);
       el.list.replaceChildren(...rows, addLi);
 
       const when = new Date(data.date);
       const dateText = Number.isNaN(when.getTime()) ? data.date
-        : when.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      el.status.textContent = loading ? 'Aktualisiere …'
-        : `${offline ? 'Offline · ' : ''}${data.source.replace(' (eingebaut)', '')} · ${dateText}`;
+        : when.toLocaleDateString(intl(), { day: '2-digit', month: '2-digit', year: 'numeric' });
+      el.status.textContent = loading ? t('Aktualisiere …')
+        : `${offline ? `${t('Offline')} · ` : ''}${data.source.replace(' (eingebaut)', '')} · ${dateText}`;
 
       if (!el.view.hidden) {
         hub.fitText(el.amount, 18);
@@ -274,15 +278,15 @@
       return codes.map((c) => ({
         value: c,
         label: `${c} – ${nameOf(c)}`,
-        group: includeFavorites && (prefs.favorites.includes(c) || c === 'EUR') ? 'Favoriten' : 'Alle Währungen',
+        group: includeFavorites && (prefs.favorites.includes(c) || c === 'EUR') ? t('Favoriten') : t('Alle Währungen'),
       }));
     }
 
     async function choose(which) {
       const value = await hub.pick({
-        title: which === 'from' ? 'Ausgangswährung' : 'Zielwährung',
+        title: which === 'from' ? t('Ausgangswährung') : t('Zielwährung'),
         items: currencyItems(),
-        groups: ['Favoriten', 'Alle Währungen'],
+        groups: [t('Favoriten'), t('Alle Währungen')],
         current: prefs[which],
         searchable: true,
       });
@@ -294,9 +298,9 @@
 
     async function addFavorite() {
       const value = await hub.pick({
-        title: 'Favorit hinzufügen',
+        title: t('Favorit hinzufügen'),
         items: currencyItems(false).filter((it) => !prefs.favorites.includes(it.value)),
-        groups: ['Alle Währungen'],
+        groups: [t('Alle Währungen')],
         searchable: true,
       });
       if (!value) return;
@@ -313,10 +317,10 @@
 
     function press(key) {
       if (key === 'ans') {
-        setAmount(String(hub.getAns()).replace('.', ','));
+        setAmount(String(hub.getAns()));
       } else if (key === 'equals') {
         const { value, error } = amountValue();
-        if (!error) setAmount(String(Math.round(value * 1e6) / 1e6).replace('.', ','));
+        if (!error) setAmount(String(Math.round(value * 1e6) / 1e6));
       } else if (key === 'to-calc') {
         if (lastValue === null) return;
         hub.useInCalc(Math.abs(lastValue) >= 0.01 ? Math.round(lastValue * 100) / 100 : lastValue);
@@ -335,7 +339,7 @@
         prefs.favorites = prefs.favorites.filter((c) => c !== unfav.dataset.unfav);
         savePrefs();
         render();
-        hub.toast(`${unfav.dataset.unfav} entfernt`);
+        hub.toast(t('{code} entfernt', { code: unfav.dataset.unfav }));
         return;
       }
       if (e.target.closest('.fx-add')) return addFavorite();
