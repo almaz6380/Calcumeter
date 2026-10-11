@@ -35,7 +35,8 @@
     history: $('#history'),
     historyList: $('#history-list'),
     historyEmpty: $('#history-empty'),
-    historyToggle: $('[data-action="toggle-history"]'),
+    historyToggle: $('#history-toggle'),
+    fxActions: $('#fx-actions'),
     toast: $('#toast'),
     calculator: $('.calculator'),
     sciToggle: $('[data-action="toggle-sci"]'),
@@ -70,9 +71,38 @@
 
   const ctx = () => ({ angle: state.angle, ans: state.ans });
 
+  // Die Anzeige rechnet deutsch: Komma als Dezimalzeichen, ";" trennt Funktionsargumente.
+  const toCalc = (expr) => expr.replace(/,/g, '.');
+
+  // Zahl für die Eingabezeile, z. B. "−1234,5"
+  const show = (value) => format(value).replace('.', ',').replace(/^-/, '−');
+
+  // Zahl für die große Anzeige, mit Tausenderpunkten: "−1.234,5"
+  function pretty(value) {
+    const s = show(value);
+    const m = /^(−?)(\d+)(.*)$/.exec(s);
+    if (!m || m[3].includes('E')) return s;
+    return m[1] + m[2].replace(/\B(?=(\d{3})+(?!\d))/g, '.') + m[3];
+  }
+
+  // In die Eingabe einfügen, negative Zahlen geklammert
+  const asOperand = (value) => show(value).replace(/^−(.*)$/, '(−$1)');
+
+  // Schrift verkleinern, bis der Text in seine Zeile passt
+  function fitText(el, minPx) {
+    el.style.removeProperty('--result-size');
+    el.style.removeProperty('--fit-size');
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    const prop = el.id === 'result' ? '--result-size' : '--fit-size';
+    while (el.scrollWidth > el.clientWidth + 1 && size > minPx) {
+      size = Math.max(minPx, size * 0.9);
+      el.style.setProperty(prop, `${size}px`);
+    }
+  }
+
   function tryEvaluate(expr) {
     try {
-      return { value: evaluate(expr, ctx()) };
+      return { value: evaluate(toCalc(expr), ctx()) };
     } catch (e) {
       return { error: e.name === 'CalcError' ? e.message : 'Fehler' };
     }
@@ -111,6 +141,11 @@
       state.expr = state.expr.slice(0, -1);
     }
     if (state.expr === '' && /^[+×÷^²³!%]$|^⁻¹$/.test(text)) state.expr = 'Ans';
+    if (text === ',') {
+      // nur ein Komma pro Zahl; "0," statt "," am Zahlanfang
+      if (/\d*,\d*$/.test(state.expr) && /,\d*$/.test(state.expr)) return render();
+      if (!/\d$/.test(state.expr)) text = '0,';
+    }
     state.expr += text;
     if (state.second || state.hyp) {
       // 2nd/hyp gelten nur für eine Eingabe
@@ -154,11 +189,11 @@
     const expr = state.expr;
     if (expr === '') {
       state.expr = '−';
-    } else if (/^[−-]?[\d.]+(?:E[−-]?\d+)?$/.test(expr)) {
+    } else if (/^[−-]?[\d,]+(?:E[−-]?\d+)?$/.test(expr)) {
       // ganze Eingabe ist eine Zahl
       state.expr = /^[−-]/.test(expr) ? expr.slice(1) : `−${expr}`;
     } else {
-      const m = /(\(−)?([\d.]+(?:E[−-]?\d+)?|π|e|Ans)$/.exec(expr);
+      const m = /(\(−)?([\d,]+(?:E[−-]?\d+)?|π|e|Ans)$/.exec(expr);
       if (m && m[1]) state.expr = expr.slice(0, m.index) + m[2];
       else if (m) state.expr = `${expr.slice(0, m.index)}(−${m[2]}`;
       else state.expr += '(−';
@@ -175,11 +210,10 @@
       return;
     }
     const closed = state.expr + ')'.repeat(openParens(state.expr));
-    const formatted = format(value);
-    state.history.unshift({ expr: closed, result: formatted, value });
+    state.history.unshift({ expr: closed, result: format(value), value });
     state.history.length = Math.min(state.history.length, HISTORY_LIMIT);
     state.ans = value;
-    state.expr = formatted.replace(/^-/, '−');
+    state.expr = show(value);
     state.justEvaluated = true;
     state.lastExpr = closed;
     save();
@@ -205,7 +239,7 @@
         break;
       case 'mr':
         if (state.memory === null) return;
-        insert(format(state.memory).replace(/^-(.*)$/, '(−$1)'));
+        insert(asOperand(state.memory));
         return;
       case 'ms':
       case 'm+':
@@ -214,7 +248,7 @@
         if (v === null) return;
         const base = state.memory || 0;
         state.memory = action === 'ms' ? v : action === 'm+' ? base + v : base - v;
-        toast(`M = ${format(state.memory)}`);
+        toast(`M = ${pretty(state.memory)}`);
         break;
       }
     }
@@ -245,12 +279,14 @@
     els.viewCalc.hidden = fx;
     els.viewFx.hidden = !fx;
     els.calcActions.hidden = fx;
+    els.fxActions.hidden = !fx;
     if (fx) toggleHistory(false);
     document.querySelectorAll('[data-view]').forEach((b) => {
       b.setAttribute('aria-selected', String(b.dataset.view === view));
     });
     if (fx && fxView) fxView.show();
     save();
+    if (!fx) render();
   }
 
   function toggleHistory(force) {
@@ -260,10 +296,11 @@
   }
 
   async function copyResult() {
-    const text = els.result.textContent.replace(/^=\s*/, '');
-    if (!text || state.error) return;
+    if (state.error) return;
+    const value = state.justEvaluated ? state.ans : tryEvaluate(state.expr).value;
+    if (value === undefined || state.expr.trim() === '') return;
     try {
-      await navigator.clipboard.writeText(text.replace('−', '-'));
+      await navigator.clipboard.writeText(show(value).replace('−', '-'));
       toast('Kopiert');
     } catch (_) {
       toast('Kopieren nicht möglich');
@@ -297,16 +334,16 @@
       r.textContent = state.error;
       r.classList.add('error');
     } else if (state.justEvaluated) {
-      r.textContent = state.expr;
+      r.textContent = pretty(state.ans);
     } else if (state.expr.trim() === '') {
       r.textContent = '0';
       r.classList.add('preview');
     } else {
       const { value } = tryEvaluate(state.expr);
-      r.textContent = value === undefined ? '' : `= ${format(value).replace(/^-/, '−')}`;
+      r.textContent = value === undefined ? '' : pretty(value);
       r.classList.add('preview');
     }
-    r.scrollLeft = r.scrollWidth;
+    if (!els.viewCalc.hidden) fitText(r, 22);
 
     // Anzeigen und Umschalter
     const sci = sciVisible();
@@ -342,7 +379,7 @@
       ex.textContent = `${h.expr} =`;
       const res = document.createElement('span');
       res.className = 'h-res';
-      res.textContent = h.result.replace(/^-/, '−');
+      res.textContent = typeof h.value === 'number' ? pretty(h.value) : h.result.replace('.', ',').replace(/^-/, '−');
       btn.append(ex, res);
       li.append(btn);
       return li;
@@ -358,7 +395,7 @@
       state.expr = h.expr;
       state.justEvaluated = false;
     } else {
-      insert(h.result.replace(/^-(.*)$/, '(−$1)'));
+      insert(typeof h.value === 'number' ? asOperand(h.value) : h.result.replace('.', ',').replace(/^-(.*)$/, '(−$1)'));
       return;
     }
     render();
@@ -376,6 +413,7 @@
       case 'hyp': state.hyp = !state.hyp; render(); break;
       case 'toggle-history': toggleHistory(); break;
       case 'toggle-sci': toggleSci(); break;
+      case 'toggle-angle': setAngle(state.angle === 'deg' ? 'rad' : 'deg'); break;
       case 'clear-history':
         state.history = [];
         save();
@@ -401,7 +439,7 @@
 
   const KEY_MAP = {
     '*': '×', '/': '÷', '-': '−', '+': '+', '^': '^', '(': '(', ')': ')',
-    '%': '%', '!': '!', '.': '.', ',': '.', 'π': 'π',
+    '%': '%', '!': '!', '.': ',', ',': ',', ';': ';', 'π': 'π',
   };
 
   function flash(selector) {
@@ -457,9 +495,10 @@
   if (window.Fx) {
     fxView = window.Fx.init({
       getAns: () => state.ans,
+      fitText,
       useInCalc: (value) => {
         setView('calc');
-        insert(format(value).replace(/^-(.*)$/, '(−$1)'));
+        insert(asOperand(value));
       },
     });
   }
@@ -468,7 +507,9 @@
   render();
   renderHistory();
   setView(state.view);
-  if (state.view === 'calc' && window.matchMedia('(min-width: 981px)').matches && state.history.length) toggleHistory(true);
+  if (state.view === 'calc' && window.matchMedia('(min-width: 1100px)').matches) toggleHistory(true);
+  window.addEventListener('resize', () => { if (state.view === 'calc') render(); });
+  if (document.fonts) document.fonts.ready.then(() => render());
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
