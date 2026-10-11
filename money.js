@@ -12,7 +12,7 @@
   'use strict';
 
   const MONEY = {
-    adsTesting: true,
+    adsTesting: false,
     // Solange adsTesting true ist, liefert AdMob nur Testanzeigen – auch mit echten IDs.
     adUnits: {
       // Android: echte IDs aus AdMob

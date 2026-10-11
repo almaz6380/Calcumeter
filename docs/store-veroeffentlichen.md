@@ -29,8 +29,8 @@ alle IDs sind eingetragen (`money.js` → `MONEY.adUnits`, Android `strings.xml`
 Noch zu tun:
 - Unter **Datenschutz und Mitteilungen** die DSGVO-Mitteilung und die IDFA-Erklärung um die beiden
   Calcumeter-Apps ergänzen und veröffentlichen.
-- **Direkt vor dem Einreichen** in `money.js` `adsTesting: false` setzen und `npm run sync`. Vorher zeigt die App
-  nur Testanzeigen – bitte nie auf eigene echte Anzeigen tippen, das kann zur Sperre des AdMob-Kontos führen.
+- `adsTesting` steht seit Version 1.0 (2) auf `false` (echte Anzeigen). Zum Testen auf eigenen Geräten in AdMob das Gerät als Testgerät eintragen.
+  Bitte nie auf eigene echte Anzeigen tippen, das kann zur Sperre des AdMob-Kontos führen.
 - Nach der Veröffentlichung in AdMob bei beiden Apps „App-Shop-Details hinzufügen“ (Verknüpfung mit dem Store).
 
 ## 2. Kauf „Werbefrei“ einrichten
