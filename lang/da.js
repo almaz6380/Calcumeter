@@ -92,7 +92,7 @@
   'Betrag eingeben': 'Indtast beløb',
   'Letztes Rechner-Ergebnis übernehmen': 'Brug seneste resultat fra lommeregneren',
   'Ergebnis in den Rechner übernehmen': 'Send resultatet til lommeregneren',
-  '→ Rechner': '→ Lommeregner',
+  '→ Rechner': '→ Beregner',
   'Anzeige': 'Annonce',
   'Geld ins Ausland senden – oft günstiger als die Bank': 'Send penge til udlandet – ofte billigere end banken',
   'Kategorie': 'Kategori',
