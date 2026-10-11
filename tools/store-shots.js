@@ -81,12 +81,16 @@ async function shoot(browser, lang, kind) {
   await ctx.close();
 }
 
-async function featureGraphic(browser) {
+// Feature-Grafik 1024 × 500: store/feature-graphic.png (Deutsch) und store/feature-graphic/<sprache>.png
+async function featureGraphic(browser, lang) {
   const page = await browser.newPage({ viewport: { width: 1024, height: 500 } });
-  await page.goto(`${BASE}tools/feature-graphic.html`);
+  await page.goto(`${BASE}tools/feature-graphic.html?lang=${lang}`);
+  if (lang !== 'de') await page.waitForSelector('body[data-ready]');
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(300);
-  await page.screenshot({ path: path.join(OUT, 'feature-graphic.png') });
+  fs.mkdirSync(path.join(OUT, 'feature-graphic'), { recursive: true });
+  await page.screenshot({ path: path.join(OUT, 'feature-graphic', `${lang}.png`) });
+  if (lang === 'de') fs.copyFileSync(path.join(OUT, 'feature-graphic', 'de.png'), path.join(OUT, 'feature-graphic.png'));
   await page.close();
 }
 
@@ -94,8 +98,8 @@ async function featureGraphic(browser) {
   const browser = await chromium.launch();
   for (const lang of LANGS) {
     for (const kind of ['ios', 'android']) await shoot(browser, lang, kind);
+    await featureGraphic(browser, lang);
   }
-  await featureGraphic(browser);
   await browser.close();
-  console.log('fertig: store/screenshots, store/feature-graphic.png');
+  console.log('fertig: store/screenshots, store/feature-graphic/');
 })();

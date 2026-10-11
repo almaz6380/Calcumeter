@@ -15,6 +15,25 @@
 </head>
 <body>
   <img src="../icons/icon-512.png" alt="">
-  <div><h1>Calcumeter</h1><p>Rechner · <b>Währung</b> · Einheiten<br>Graph · Programmierer</p></div>
+  <div><h1>Calcumeter</h1><p><span data-t="Rechner">Rechner</span> · <b data-t="Währung">Währung</b> · <span data-t="Einheiten">Einheiten</span><br><span data-t="Graph">Graph</span> · <span data-t="Programmierer">Programmierer</span></p></div>
+<script src="../i18n.js"></script>
+<script>
+  // ?lang=fr → Wörter in der Sprache (lang/<code>.js nachladen)
+  (function () {
+    const lang = new URLSearchParams(location.search).get('lang');
+    if (!lang || lang === 'de') return;
+    const done = () => {
+      I18n.setLang(lang);
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = I18n.t(el.dataset.t); });
+      document.body.dataset.ready = '1';
+    };
+    if (lang === 'en') return done();
+    const s = document.createElement('script');
+    s.src = `../lang/${lang}.js`;
+    s.onload = done;
+    document.head.appendChild(s);
+  })();
+</script>
 </body>
 </html>
