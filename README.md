@@ -1,6 +1,6 @@
 # Calcumeter
 
-Taschenrechner mit wissenschaftlichen Funktionen, Währungs- und Einheitenrechner, Funktionsplotter und Programmierer-Modus – als Web-App (offline-fähig, installierbar) und als Store-App für Android und iOS mit Widgets. Deutsch und Englisch.
+Taschenrechner mit wissenschaftlichen Funktionen, Währungs- und Einheitenrechner, Funktionsplotter und Programmierer-Modus – als Web-App (offline-fähig, installierbar) und als Store-App für Android und iOS mit Widgets. In 15 Sprachen.
 
 Rechnen und installieren: **https://almaz6380.github.io/Calcumeter/**
 
@@ -27,7 +27,7 @@ Alternativ `index.html` einfach im Browser öffnen.
 - **Einheiten**: Länge, Fläche, Volumen, Gewicht, Temperatur, Geschwindigkeit, Zeit, Daten, Energie, Druck – gleiche Bedienung wie der Währungsrechner.
 - **Graph**: bis zu drei Funktionen von `x` (Bogenmaß), z. B. `sin(x)` oder `x^2/4−1`. Ziehen verschiebt, Mausrad oder zwei Finger zoomen, Doppeltipp setzt zurück, Tippen auf eine Kurve zeigt den Punkt.
 - **Teilen**: Ergebnis, Umrechnung oder Einheit über das Teilen-Menü (im Browser: in die Zwischenablage).
-- **Sprache**: Deutsch oder Englisch (automatisch oder im Menü); Zahlen und Trennzeichen folgen der Sprache.
+- **Sprache**: Deutsch, Englisch, Spanisch, Französisch, Italienisch, Portugiesisch, Türkisch, Polnisch, Niederländisch, Schwedisch, Dänisch, Japanisch, Koreanisch, Chinesisch (vereinfacht/traditionell) – automatisch nach Gerätesprache oder im Menü; Zahlen und Trennzeichen folgen der Sprache.
 - **Store-App**: Wechselkurs- und Schnellstart-Widget, App-Shortcuts (Währung, Einheiten, Graph), Banner nur außerhalb des Rechners, 24 h werbefrei per Video oder dauerhaft per Kauf.
 - **Programmierer**: Ganzzahlen in HEX/DEC/OCT/BIN mit 8/16/32/64 Bit (Zweierkomplement), `AND OR XOR NOT << >> mod`, Bit-Ansicht zum Antippen einzelner Bits.
 
@@ -68,7 +68,7 @@ Alternativ `index.html` einfach im Browser öffnen.
 - `units.js` – Einheitenrechner
 - `graph.js` – Funktionsplotter (Canvas)
 - `programmer.js` – Programmierer-Rechner (BigInt)
-- `i18n.js` – Deutsch/Englisch; `native.js` – Brücke zur Store-App; `money.js` – Werbung und Kauf (nur App)
+- `i18n.js` und `lang/` – Sprachen; `native.js` – Brücke zur Store-App; `money.js` – Werbung und Kauf (nur App)
 - `privacy.html`, `imprint.html`, `assets/` – Rechtstexte, Schrift
 - `android/`, `ios/`, `capacitor.config.json`, `resources/`, `store/`, `docs/` – Store-App, Widgets, Store-Material
 - `index.html`, `style.css` – Oberfläche

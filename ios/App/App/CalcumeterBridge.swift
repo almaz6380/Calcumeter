@@ -31,14 +31,39 @@ public class WidgetBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     }
 }
 
+// Texte in der Gerätesprache (erzeugt von tools/native-strings.py)
+// L10N-BEGIN
+enum L10n {
+    static let table: [String: [String: String]] = [
+        "de": ["widget_view_fx": "Währung", "widget_view_units": "Einheiten", "widget_view_graph": "Graph"],
+        "en": ["widget_view_fx": "Currency", "widget_view_units": "Units", "widget_view_graph": "Graph"],
+    ]
+
+    /// Erste unterstützte Gerätesprache, sonst Englisch
+    static var lang: String {
+        for tag in Locale.preferredLanguages {
+            let t = tag.lowercased()
+            if t.hasPrefix("zh") {
+                return t.contains("hant") || t.contains("-tw") || t.contains("-hk") || t.contains("-mo") ? "zh-Hant" : "zh-Hans"
+            }
+            if t.hasPrefix("nb") || t.hasPrefix("nn") || t.hasPrefix("no") { return "da" }
+            let base = String(t.split(separator: "-").first ?? "")
+            if table[base] != nil { return base }
+        }
+        return "en"
+    }
+
+    static func text(_ key: String) -> String { table[lang]?[key] ?? table["en"]?[key] ?? key }
+}
+// L10N-END
+
 /// App-Shortcuts (langes Drücken auf das App-Symbol) und Bereich-Links calcumeter://view/<bereich>
 enum CalcumeterShortcuts {
     static func install() {
-        let de = (Locale.preferredLanguages.first ?? "en").hasPrefix("de")
         let items: [(String, String, String)] = [
-            ("fx", de ? "Währung" : "Currency", "eurosign.circle"),
-            ("units", de ? "Einheiten" : "Units", "ruler"),
-            ("graph", "Graph", "function"),
+            ("fx", L10n.text("widget_view_fx"), "eurosign.circle"),
+            ("units", L10n.text("widget_view_units"), "ruler"),
+            ("graph", L10n.text("widget_view_graph"), "function"),
         ]
         UIApplication.shared.shortcutItems = items.map { item in
             UIApplicationShortcutItem(type: item.0, localizedTitle: item.1, localizedSubtitle: nil,

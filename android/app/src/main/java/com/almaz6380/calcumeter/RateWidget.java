@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RemoteViews;
+import java.util.Locale;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -45,11 +47,11 @@ public class RateWidget extends AppWidgetProvider {
 
     static void render(Context ctx, AppWidgetManager mgr, int[] ids) {
         JSONObject data = WidgetStore.load(ctx);
-        boolean de = WidgetStore.german(data);
+        Locale loc = WidgetStore.locale(data);
         String from = data.optString("from", "EUR");
         JSONArray favs = data.optJSONArray("favorites");
         if (favs == null) favs = new JSONArray().put("USD").put("GBP").put("CHF").put("JPY");
-        String date = WidgetStore.date(data, de);
+        String date = WidgetStore.date(data, loc);
 
         for (int id : ids) {
             Bundle opt = mgr.getAppWidgetOptions(id);
@@ -60,7 +62,7 @@ public class RateWidget extends AppWidgetProvider {
             if (small) {
                 v = new RemoteViews(ctx.getPackageName(), R.layout.widget_rate_small);
                 v.setTextViewText(R.id.small_title, "1 " + from + " =");
-                v.setTextViewText(R.id.small_value, WidgetStore.format(WidgetStore.rate(data, from, first), de));
+                v.setTextViewText(R.id.small_value, WidgetStore.format(WidgetStore.rate(data, from, first), loc));
                 v.setTextViewText(R.id.small_code, first);
                 v.setTextViewText(R.id.small_date, date);
             } else {
@@ -73,7 +75,7 @@ public class RateWidget extends AppWidgetProvider {
                     if (code.equals(from)) continue;
                     v.setViewVisibility(ROWS[row][0], View.VISIBLE);
                     v.setTextViewText(ROWS[row][1], code);
-                    v.setTextViewText(ROWS[row][2], WidgetStore.format(WidgetStore.rate(data, from, code), de));
+                    v.setTextViewText(ROWS[row][2], WidgetStore.format(WidgetStore.rate(data, from, code), loc));
                     row++;
                 }
                 for (; row < ROWS.length; row++) v.setViewVisibility(ROWS[row][0], View.GONE);

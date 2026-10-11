@@ -13,6 +13,33 @@ private let amber = Color(red: 1.0, green: 0.71, blue: 0.28)
 private let textMain = Color(red: 0.957, green: 0.957, blue: 0.961)
 private let textMuted = Color(red: 0.54, green: 0.545, blue: 0.58)
 
+// MARK: - Texte in der Gerätesprache (erzeugt von tools/native-strings.py)
+
+// L10N-BEGIN
+enum L10n {
+    static let table: [String: [String: String]] = [
+        "de": ["widget_rate_name": "Wechselkurse", "widget_rate_desc": "Deine Lieblingswährungen, automatisch aktualisiert", "widget_quick_name": "Calcumeter Schnellstart", "widget_quick_desc": "Rechner, Währung, Einheiten oder Graph direkt öffnen", "widget_view_calc": "Rechner", "widget_view_fx": "Währung", "widget_view_units": "Einheiten", "widget_view_graph": "Graph"],
+        "en": ["widget_rate_name": "Exchange rates", "widget_rate_desc": "Your favourite currencies, updated automatically", "widget_quick_name": "Calcumeter quick start", "widget_quick_desc": "Open calculator, currency, units or graph directly", "widget_view_calc": "Calc", "widget_view_fx": "Currency", "widget_view_units": "Units", "widget_view_graph": "Graph"],
+    ]
+
+    /// Erste unterstützte Gerätesprache, sonst Englisch
+    static var lang: String {
+        for tag in Locale.preferredLanguages {
+            let t = tag.lowercased()
+            if t.hasPrefix("zh") {
+                return t.contains("hant") || t.contains("-tw") || t.contains("-hk") || t.contains("-mo") ? "zh-Hant" : "zh-Hans"
+            }
+            if t.hasPrefix("nb") || t.hasPrefix("nn") || t.hasPrefix("no") { return "da" }
+            let base = String(t.split(separator: "-").first ?? "")
+            if table[base] != nil { return base }
+        }
+        return "en"
+    }
+
+    static func text(_ key: String) -> String { table[lang]?[key] ?? table["en"]?[key] ?? key }
+}
+// L10N-END
+
 // MARK: - Gemeinsame Daten
 
 struct RateSnapshot {
@@ -20,7 +47,7 @@ struct RateSnapshot {
     var favorites = ["USD", "GBP", "CHF", "JPY"]
     var rates: [String: Double] = [:]
     var updated: Date?
-    var german = (Locale.preferredLanguages.first ?? "en").hasPrefix("de")
+    var localeId = Locale.preferredLanguages.first ?? "en"
 
     static func load() -> RateSnapshot {
         var s = RateSnapshot()
@@ -33,7 +60,8 @@ struct RateSnapshot {
             s.rates = r.compactMapValues { ($0 as? NSNumber)?.doubleValue }
         }
         if let ms = obj["updated"] as? Double, ms > 0 { s.updated = Date(timeIntervalSince1970: ms / 1000) }
-        if let lang = obj["lang"] as? String { s.german = lang.hasPrefix("de") }
+        if let id = obj["locale"] as? String { s.localeId = id }
+        else if let lang = obj["lang"] as? String { s.localeId = lang.hasPrefix("de") ? "de_DE" : "en_GB" }
         return s
     }
 
@@ -65,7 +93,7 @@ struct RateSnapshot {
         guard let v = v else { return "–" }
         let f = NumberFormatter()
         f.numberStyle = .decimal
-        f.locale = Locale(identifier: german ? "de_DE" : "en_GB")
+        f.locale = Locale(identifier: localeId)
         let digits = v >= 100 ? 2 : v >= 1 ? 4 : 6
         f.minimumFractionDigits = min(2, digits)
         f.maximumFractionDigits = digits
@@ -75,7 +103,7 @@ struct RateSnapshot {
     var dateText: String {
         guard let d = updated else { return "" }
         let f = DateFormatter()
-        f.locale = Locale(identifier: german ? "de_DE" : "en_GB")
+        f.locale = Locale(identifier: localeId)
         f.dateStyle = .short
         return f.string(from: d)
     }
@@ -158,8 +186,8 @@ struct RateWidget: Widget {
         StaticConfiguration(kind: "CalcumeterRates", provider: RateProvider()) { entry in
             RateWidgetView(entry: entry)
         }
-        .configurationDisplayName(RateSnapshot().german ? "Wechselkurse" : "Exchange rates")
-        .description(RateSnapshot().german ? "Deine Lieblingswährungen, automatisch aktualisiert." : "Your favourite currencies, updated automatically.")
+        .configurationDisplayName(L10n.text("widget_rate_name"))
+        .description(L10n.text("widget_rate_desc"))
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -179,14 +207,12 @@ struct QuickProvider: TimelineProvider {
 }
 
 struct QuickWidgetView: View {
-    let german = (Locale.preferredLanguages.first ?? "en").hasPrefix("de")
-
     var body: some View {
         let items: [(String, String, String)] = [
-            ("calc", german ? "Rechner" : "Calc", "plus.forwardslash.minus"),
-            ("fx", german ? "Währung" : "Currency", "eurosign.circle"),
-            ("units", german ? "Einheiten" : "Units", "ruler"),
-            ("graph", "Graph", "function"),
+            ("calc", L10n.text("widget_view_calc"), "plus.forwardslash.minus"),
+            ("fx", L10n.text("widget_view_fx"), "eurosign.circle"),
+            ("units", L10n.text("widget_view_units"), "ruler"),
+            ("graph", L10n.text("widget_view_graph"), "function"),
         ]
         HStack(spacing: 8) {
             ForEach(items, id: \.0) { item in
@@ -211,9 +237,8 @@ struct QuickWidget: Widget {
         StaticConfiguration(kind: "CalcumeterQuick", provider: QuickProvider()) { _ in
             QuickWidgetView()
         }
-        .configurationDisplayName("Calcumeter")
-        .description((Locale.preferredLanguages.first ?? "en").hasPrefix("de")
-            ? "Rechner, Währung, Einheiten oder Graph direkt öffnen." : "Open calculator, currency, units or graph directly.")
+        .configurationDisplayName(L10n.text("widget_quick_name"))
+        .description(L10n.text("widget_quick_desc"))
         .supportedFamilies([.systemMedium])
     }
 }

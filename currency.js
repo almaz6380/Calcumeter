@@ -226,6 +226,7 @@
         rates: data.rates,
         updated: Number.isNaN(when) ? 0 : when,
         lang: window.I18n.getLang(),
+        locale: intl(),   // Zahlen und Datum im Widget, z. B. "fr-FR"
       });
     }
 

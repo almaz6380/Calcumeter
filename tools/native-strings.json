@@ -1,0 +1,22 @@
+{
+ "de": {
+  "widget_rate_name": "Wechselkurse",
+  "widget_rate_desc": "Deine Lieblingswährungen, automatisch aktualisiert",
+  "widget_quick_name": "Calcumeter Schnellstart",
+  "widget_quick_desc": "Rechner, Währung, Einheiten oder Graph direkt öffnen",
+  "widget_view_calc": "Rechner",
+  "widget_view_fx": "Währung",
+  "widget_view_units": "Einheiten",
+  "widget_view_graph": "Graph"
+ },
+ "en": {
+  "widget_rate_name": "Exchange rates",
+  "widget_rate_desc": "Your favourite currencies, updated automatically",
+  "widget_quick_name": "Calcumeter quick start",
+  "widget_quick_desc": "Open calculator, currency, units or graph directly",
+  "widget_view_calc": "Calc",
+  "widget_view_fx": "Currency",
+  "widget_view_units": "Units",
+  "widget_view_graph": "Graph"
+ }
+}
