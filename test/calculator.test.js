@@ -128,3 +128,14 @@ test('Formatierung', () => {
   assert.equal(format(-0), '0');
   assert.equal(format(1 / 3), '0.333333333333');
 });
+
+test('Kompilierte Ausdrücke mit x', () => {
+  const { compile } = require('../calculator.js');
+  assert.equal(compile('x^2')(3), 9);
+  assert.equal(compile('2x+1')(4), 9);
+  assert.equal(compile('sin(x)')(Math.PI / 2), 1);
+  assert.ok(Number.isNaN(compile('ln(x)')(-1)));
+  assert.ok(Number.isNaN(compile('1/x')(0)));
+  assert.throws(() => evaluate('x+1'), /Unbekannt: x/);
+  assert.equal(calc('exp(0)+max(1;2)'.replace(';', ',')), '3');
+});

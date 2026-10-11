@@ -1,6 +1,6 @@
 # Calcumeter
 
-Taschenrechner mit wissenschaftlichen Funktionen und Währungsrechner als Web-App – ohne Abhängigkeiten, offline-fähig und installierbar (PWA).
+Taschenrechner mit wissenschaftlichen Funktionen, Währungs- und Einheitenrechner, Funktionsplotter und Programmierer-Modus als Web-App – ohne Abhängigkeiten, offline-fähig und installierbar (PWA).
 
 Rechnen und installieren: **https://almaz6380.github.io/Calcumeter/**
 
@@ -17,9 +17,14 @@ Alternativ `index.html` einfach im Browser öffnen.
 
 ## Bedienung
 
-- **Design**: Vollbild in Grafit mit Bernstein-Akzent; die Tasten füllen den Bildschirm. Zahlen erscheinen deutsch (`1.234,5`).
+- **Bereiche**: Oben links wechselt der Bereichsschalter zwischen Rechner, Währung, Einheiten, Graph und Programmierer. Dort sind auch die Einstellungen (Design Auto/Hell/Dunkel, Vibration).
+- **Design**: Vollbild in Grafit mit Bernstein-Akzent, auf Wunsch hell; die Tasten füllen den Bildschirm. Zahlen erscheinen deutsch (`1.234,5`).
+- **Gesten**: Wischen über die Anzeige löscht die letzte Eingabe, langes Drücken auf AC löscht auch den Speicher. Auf Android vibriert jede Taste kurz (abschaltbar).
 - **Rechner**: Zuerst sind nur die Grundrechenarten zu sehen. Die wissenschaftlichen Tasten blendet der Knopf **f(x)** ein (Tastatur: Umschalt+S); auf dem Handy erscheinen sie automatisch im Querformat. Grad/Bogenmaß wechselt per Tipp auf DEG/RAD. Funktionsargumente werden mit `;` getrennt, z. B. `log(8;2)`.
-- **Währung**: Umrechnung zwischen rund 160 Währungen mit Tageskursen (ExchangeRate-API, ersatzweise EZB). Ohne Netz gelten die zuletzt geladenen bzw. eingebauten EZB-Kurse. Der Betrag wird über die eigene Zifferntastatur eingegeben (am Computer auch per Tastatur, dort mit Rechenzeichen wie `49,90*3` und Enter). **Ans** übernimmt das letzte Rechner-Ergebnis, **→ Rechner** schickt das umgerechnete Ergebnis in den Rechner.
+- **Währung**: Umrechnung zwischen rund 160 Währungen mit Tageskursen (ExchangeRate-API, ersatzweise EZB). Ohne Netz gelten die zuletzt geladenen bzw. eingebauten EZB-Kurse. Der Betrag wird über die eigene Zifferntastatur eingegeben (am Computer auch per Tastatur, dort mit Rechenzeichen wie `49,90*3` und Enter). **Ans** übernimmt das letzte Rechner-Ergebnis, **→ Rechner** schickt das umgerechnete Ergebnis in den Rechner. Währungen wählt man über ein Auswahlblatt mit Suche; die Liste darunter zeigt eigene Favoriten (Stern entfernt, „+ Währung hinzufügen“ ergänzt).
+- **Einheiten**: Länge, Fläche, Volumen, Gewicht, Temperatur, Geschwindigkeit, Zeit, Daten, Energie, Druck – gleiche Bedienung wie der Währungsrechner.
+- **Graph**: bis zu drei Funktionen von `x` (Bogenmaß), z. B. `sin(x)` oder `x^2/4−1`. Ziehen verschiebt, Mausrad oder zwei Finger zoomen, Doppeltipp setzt zurück, Tippen auf eine Kurve zeigt den Punkt.
+- **Programmierer**: Ganzzahlen in HEX/DEC/OCT/BIN mit 8/16/32/64 Bit (Zweierkomplement), `AND OR XOR NOT << >> mod`, Bit-Ansicht zum Antippen einzelner Bits.
 
 ## Funktionen
 
@@ -53,7 +58,11 @@ Alternativ `index.html` einfach im Browser öffnen.
 
 - `calculator.js` – Rechenkern: Tokenizer, Parser (rekursiver Abstieg, kein `eval`) und Auswertung
 - `app.js` – Bedienung, Anzeige, Speicher, Verlauf, Tastatur
-- `currency.js` – Währungsrechner: Kurse laden und zwischenspeichern, Umrechnung
+- `keypad.js` – gemeinsame Bausteine: Betragseingabe, Auswahlblatt mit Suche, Gesten, Vibration
+- `currency.js` – Währungsrechner: Kurse laden und zwischenspeichern, Umrechnung, Favoriten
+- `units.js` – Einheitenrechner
+- `graph.js` – Funktionsplotter (Canvas)
+- `programmer.js` – Programmierer-Rechner (BigInt)
 - `index.html`, `style.css` – Oberfläche
 - `sw.js`, `manifest.webmanifest`, `icons/` – Offline-Betrieb, Installation und App-Icons
 - `test/` – Tests mit dem eingebauten Node-Testrunner

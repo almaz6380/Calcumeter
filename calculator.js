@@ -204,7 +204,10 @@
   const WORD_OPERATORS = ['mod', 'ncr', 'npr'];
 
   // Längste Namen zuerst, damit z. B. "asinh" vor "asin" und "exp" vor "e" greift.
-  const NAMES = [...Object.keys(FUNCTIONS), ...Object.keys(CONSTANTS), 'mod']
+  // Variablen gibt es nur in kompilierten Ausdrücken (Funktionsplotter).
+  const VARIABLES = ['x'];
+
+  const NAMES = [...Object.keys(FUNCTIONS), ...Object.keys(CONSTANTS), ...VARIABLES, 'mod']
     .filter((n, i, a) => a.indexOf(n) === i)
     .sort((a, b) => b.length - a.length);
 
@@ -365,6 +368,7 @@
       }
       if (t.type === 'id') {
         if (CONSTANTS[t.name]) return { type: 'const', name: t.name };
+        if (VARIABLES.includes(t.name)) return { type: 'var', name: t.name };
         const [min, max] = FUNCTIONS[t.name];
         const args = [];
         if (peek() && peek().type === '(') {
@@ -399,6 +403,9 @@
     switch (node.type) {
       case 'num':
         return node.value;
+      case 'var':
+        if (!ctx.vars || !(node.name in ctx.vars)) throw new CalcError(`Unbekannt: ${node.name}`);
+        return ctx.vars[node.name];
       case 'const':
         return CONSTANTS[node.name](ctx);
       case 'neg':
@@ -467,5 +474,21 @@
     return String(parseFloat(x.toPrecision(12)));
   }
 
-  return { evaluate, format, tokenize, parse, CalcError, FUNCTIONS: Object.keys(FUNCTIONS) };
+  // Ausdruck mit Variable x einmal übersetzen und dann schnell für viele x auswerten.
+  // Liefert NaN, wo der Ausdruck nicht definiert ist (z. B. ln(x) für x ≤ 0).
+  function compile(expression, ctx = {}) {
+    const tree = parse(tokenize(String(expression)));
+    const context = { angle: ctx.angle === 'deg' ? 'deg' : 'rad', ans: ctx.ans || 0, vars: { x: 0 } };
+    return (x) => {
+      context.vars.x = x;
+      try {
+        return evalNode(tree, context);
+      } catch (e) {
+        if (e instanceof CalcError && e.message.startsWith('Unbekannt')) throw e;
+        return NaN;
+      }
+    };
+  }
+
+  return { evaluate, compile, format, tokenize, parse, CalcError, FUNCTIONS: Object.keys(FUNCTIONS) };
 });

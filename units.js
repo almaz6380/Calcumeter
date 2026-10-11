@@ -1,0 +1,318 @@
+/*
+ * Calcumeter – Einheitenrechner
+ *
+ * Jede Kategorie rechnet über eine Basiseinheit: Wert × Faktor = Basis.
+ * Temperaturen brauchen eigene Umrechnungen (Nullpunkt verschoben).
+ */
+(function (global, factory) {
+  const keypad = typeof module === 'object' && module.exports ? require('./keypad.js') : global.Keypad;
+  const api = factory(keypad);
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else global.Units = api;
+})(typeof self !== 'undefined' ? self : this, function (Keypad) {
+  'use strict';
+
+  const PREFS_KEY = 'calcumeter.units';
+
+  // id: [Symbol, Name, Faktor zur Basiseinheit]
+  const CATEGORIES = {
+    length: {
+      name: 'Länge', from: 'km', to: 'mi',
+      units: {
+        mm: ['mm', 'Millimeter', 1e-3], cm: ['cm', 'Zentimeter', 1e-2], m: ['m', 'Meter', 1],
+        km: ['km', 'Kilometer', 1e3], um: ['µm', 'Mikrometer', 1e-6], in: ['in', 'Zoll', 0.0254],
+        ft: ['ft', 'Fuß', 0.3048], yd: ['yd', 'Yard', 0.9144], mi: ['mi', 'Meile', 1609.344],
+        nmi: ['sm', 'Seemeile', 1852],
+      },
+    },
+    area: {
+      name: 'Fläche', from: 'm2', to: 'ft2',
+      units: {
+        mm2: ['mm²', 'Quadratmillimeter', 1e-6], cm2: ['cm²', 'Quadratzentimeter', 1e-4],
+        m2: ['m²', 'Quadratmeter', 1], a: ['a', 'Ar', 100], ha: ['ha', 'Hektar', 1e4],
+        km2: ['km²', 'Quadratkilometer', 1e6], in2: ['in²', 'Quadratzoll', 0.00064516],
+        ft2: ['ft²', 'Quadratfuß', 0.09290304], yd2: ['yd²', 'Quadratyard', 0.83612736],
+        ac: ['ac', 'Acre', 4046.8564224], mi2: ['mi²', 'Quadratmeile', 2589988.110336],
+      },
+    },
+    volume: {
+      name: 'Volumen', from: 'l', to: 'usgal',
+      units: {
+        ml: ['ml', 'Milliliter', 1e-3], cl: ['cl', 'Zentiliter', 1e-2], dl: ['dl', 'Deziliter', 0.1],
+        l: ['l', 'Liter', 1], m3: ['m³', 'Kubikmeter', 1e3], cm3: ['cm³', 'Kubikzentimeter', 1e-3],
+        tsp: ['TL', 'Teelöffel', 0.005], tbsp: ['EL', 'Esslöffel', 0.015],
+        cup: ['cup', 'Tasse (US)', 0.2365882365], floz: ['fl oz', 'Flüssigunze (US)', 0.0295735295625],
+        pint: ['pt', 'Pint (US)', 0.473176473], usgal: ['gal', 'Gallone (US)', 3.785411784],
+        ukgal: ['gal (UK)', 'Gallone (UK)', 4.54609],
+      },
+    },
+    mass: {
+      name: 'Gewicht', from: 'kg', to: 'lb',
+      units: {
+        mg: ['mg', 'Milligramm', 1e-6], g: ['g', 'Gramm', 1e-3], kg: ['kg', 'Kilogramm', 1],
+        t: ['t', 'Tonne', 1e3], oz: ['oz', 'Unze', 0.028349523125], lb: ['lb', 'Pfund (US)', 0.45359237],
+        st: ['st', 'Stone', 6.35029318], ct: ['ct', 'Karat', 2e-4],
+      },
+    },
+    temperature: {
+      name: 'Temperatur', from: 'C', to: 'F',
+      units: {
+        C: ['°C', 'Grad Celsius', { to: (v) => v, from: (c) => c }],
+        F: ['°F', 'Grad Fahrenheit', { to: (v) => ((v - 32) * 5) / 9, from: (c) => (c * 9) / 5 + 32 }],
+        K: ['K', 'Kelvin', { to: (v) => v - 273.15, from: (c) => c + 273.15 }],
+      },
+    },
+    speed: {
+      name: 'Geschwindigkeit', from: 'kmh', to: 'mph',
+      units: {
+        ms: ['m/s', 'Meter pro Sekunde', 1], kmh: ['km/h', 'Kilometer pro Stunde', 1 / 3.6],
+        mph: ['mph', 'Meilen pro Stunde', 0.44704], kn: ['kn', 'Knoten', 1852 / 3600],
+        fts: ['ft/s', 'Fuß pro Sekunde', 0.3048], mach: ['Mach', 'Mach (Meereshöhe)', 340.3],
+      },
+    },
+    time: {
+      name: 'Zeit', from: 'h', to: 'min',
+      units: {
+        ms: ['ms', 'Millisekunde', 1e-3], s: ['s', 'Sekunde', 1], min: ['min', 'Minute', 60],
+        h: ['h', 'Stunde', 3600], d: ['d', 'Tag', 86400], wk: ['Wo.', 'Woche', 604800],
+        mo: ['Mon.', 'Monat (Ø)', 2629746], yr: ['J.', 'Jahr (Ø)', 31556952],
+      },
+    },
+    data: {
+      name: 'Daten', from: 'GB', to: 'MB',
+      units: {
+        bit: ['bit', 'Bit', 0.125], B: ['B', 'Byte', 1], kB: ['kB', 'Kilobyte', 1e3], MB: ['MB', 'Megabyte', 1e6],
+        GB: ['GB', 'Gigabyte', 1e9], TB: ['TB', 'Terabyte', 1e12], KiB: ['KiB', 'Kibibyte', 1024],
+        MiB: ['MiB', 'Mebibyte', 1048576], GiB: ['GiB', 'Gibibyte', 1073741824], TiB: ['TiB', 'Tebibyte', 1099511627776],
+      },
+    },
+    energy: {
+      name: 'Energie', from: 'kcal', to: 'kJ',
+      units: {
+        J: ['J', 'Joule', 1], kJ: ['kJ', 'Kilojoule', 1e3], cal: ['cal', 'Kalorie', 4.184],
+        kcal: ['kcal', 'Kilokalorie', 4184], Wh: ['Wh', 'Wattstunde', 3600], kWh: ['kWh', 'Kilowattstunde', 3.6e6],
+        eV: ['eV', 'Elektronenvolt', 1.602176634e-19], BTU: ['BTU', 'British Thermal Unit', 1055.05585262],
+      },
+    },
+    pressure: {
+      name: 'Druck', from: 'bar', to: 'psi',
+      units: {
+        Pa: ['Pa', 'Pascal', 1], hPa: ['hPa', 'Hektopascal', 100], kPa: ['kPa', 'Kilopascal', 1e3],
+        bar: ['bar', 'Bar', 1e5], mbar: ['mbar', 'Millibar', 100], atm: ['atm', 'Atmosphäre', 101325],
+        psi: ['psi', 'Pfund pro Quadratzoll', 6894.757293168], mmHg: ['mmHg', 'Millimeter Quecksilber', 133.322387415],
+      },
+    },
+  };
+
+  // ---------- Reine Logik ----------
+
+  function convertUnit(value, from, to, category) {
+    const cat = CATEGORIES[category];
+    if (!cat || !cat.units[from] || !cat.units[to]) throw new Error('Unbekannte Einheit');
+    const f = cat.units[from][2];
+    const t = cat.units[to][2];
+    const base = typeof f === 'object' ? f.to(value) : value * f;
+    return typeof t === 'object' ? t.from(base) : base / t;
+  }
+
+  // Zahl deutsch formatieren, sehr große/kleine Werte als Zehnerpotenz
+  function formatValue(v) {
+    if (!Number.isFinite(v)) return '–';
+    if (v === 0) return '0';
+    const abs = Math.abs(v);
+    if (abs >= 1e15 || abs < 1e-6) {
+      const [m, e] = v.toExponential(6).split('e');
+      return `${m.replace(/\.?0+$/, '').replace('.', ',').replace('-', '−')}E${parseInt(e, 10)}`;
+    }
+    return new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 10 }).format(v).replace('-', '−');
+  }
+
+  // ---------- Oberfläche ----------
+
+  function init(hub) {
+    const $ = (id) => document.getElementById(id);
+    const el = {
+      view: $('view-units'), cats: $('unit-cats'),
+      amount: $('unit-amount'), result: $('unit-result'),
+      fromSym: $('unit-from-sym'), toSym: $('unit-to-sym'),
+      fromName: $('unit-from-name'), toName: $('unit-to-name'),
+      rate: $('unit-rate'), list: $('unit-list'), swap: $('unit-swap'),
+    };
+    const { evaluate } = window.Calc;
+
+    const prefs = { cat: 'length', amount: '1', sel: {} };
+    try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')); } catch (_) { /* ohne Speicher */ }
+    if (!CATEGORIES[prefs.cat]) prefs.cat = 'length';
+    let lastValue = null;
+
+    const save = () => {
+      try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) { /* ignorieren */ }
+    };
+
+    // gewählte Von/Nach-Einheit je Kategorie merken
+    function sel() {
+      const cat = CATEGORIES[prefs.cat];
+      const s = prefs.sel[prefs.cat] || {};
+      if (!cat.units[s.from]) s.from = cat.from;
+      if (!cat.units[s.to]) s.to = cat.to;
+      prefs.sel[prefs.cat] = s;
+      return s;
+    }
+
+    function amountValue() {
+      const text = prefs.amount.trim();
+      if (text === '' || text === '-') return { value: 0 };
+      try {
+        return { value: evaluate(Keypad.normalizeAmount(text)) };
+      } catch (e) {
+        return { error: e.message };
+      }
+    }
+
+    // Kategorie-Chips einmal aufbauen
+    el.cats.replaceChildren(...Object.entries(CATEGORIES).map(([id, c]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cat-chip';
+      b.dataset.cat = id;
+      b.textContent = c.name;
+      return b;
+    }));
+
+    function render() {
+      const cat = CATEGORIES[prefs.cat];
+      const { from, to } = sel();
+      const { value, error } = amountValue();
+      el.amount.textContent = Keypad.groupTyped(prefs.amount);
+      el.amount.classList.toggle('invalid', Boolean(error));
+      if (error) {
+        el.result.textContent = '–';
+        lastValue = null;
+      } else {
+        lastValue = convertUnit(value, from, to, prefs.cat);
+        el.result.textContent = formatValue(lastValue);
+      }
+      el.fromSym.textContent = cat.units[from][0];
+      el.toSym.textContent = cat.units[to][0];
+      el.fromName.textContent = cat.units[from][1];
+      el.toName.textContent = cat.units[to][1];
+      el.rate.textContent = prefs.cat === 'temperature'
+        ? `${formatValue(convertUnit(0, from, to, prefs.cat))} ${cat.units[to][0]} bei 0 ${cat.units[from][0]}`
+        : `1 ${cat.units[from][0]} = ${formatValue(convertUnit(1, from, to, prefs.cat))} ${cat.units[to][0]}`;
+
+      el.cats.querySelectorAll('[data-cat]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.cat === prefs.cat));
+      });
+
+      const base = error ? 0 : value;
+      el.list.replaceChildren(...Object.entries(cat.units)
+        .filter(([id]) => id !== from && id !== to)
+        .map(([id, u]) => {
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'fx-li';
+          btn.dataset.unit = id;
+          btn.title = `${u[1]} als Zieleinheit wählen`;
+          const left = document.createElement('span');
+          const sym = document.createElement('strong');
+          sym.className = 'fx-li-code';
+          sym.textContent = u[0];
+          const name = document.createElement('span');
+          name.className = 'fx-li-name';
+          name.textContent = u[1];
+          left.append(sym, name);
+          const right = document.createElement('span');
+          right.className = 'fx-li-val';
+          right.textContent = `${formatValue(convertUnit(base, from, id, prefs.cat))} ${u[0]}`;
+          btn.append(left, right);
+          li.append(btn);
+          return li;
+        }));
+
+      if (!el.view.hidden) {
+        hub.fitText(el.amount, 18);
+        hub.fitText(el.result, 18);
+      }
+    }
+
+    async function choose(which) {
+      const cat = CATEGORIES[prefs.cat];
+      const s = sel();
+      const value = await hub.pick({
+        title: which === 'from' ? `${cat.name}: von` : `${cat.name}: nach`,
+        items: Object.entries(cat.units).map(([id, u]) => ({ value: id, label: u[1], sub: u[0], group: cat.name })),
+        current: s[which],
+        searchable: false,
+      });
+      if (!value) return;
+      s[which] = value;
+      save();
+      render();
+    }
+
+    function setAmount(text) {
+      prefs.amount = text;
+      save();
+      render();
+    }
+
+    function press(key) {
+      if (key === 'ans') {
+        setAmount(String(hub.getAns()).replace('.', ','));
+      } else if (key === 'equals') {
+        const { value, error } = amountValue();
+        if (!error) setAmount(String(Math.round(value * 1e9) / 1e9).replace('.', ','));
+      } else if (key === 'to-calc') {
+        if (lastValue !== null) hub.useInCalc(Number(lastValue.toPrecision(12)));
+      } else {
+        setAmount(Keypad.editAmount(prefs.amount, key));
+      }
+    }
+
+    el.view.addEventListener('click', (e) => {
+      const key = e.target.closest('[data-unitkey]');
+      if (key) return press(key.dataset.unitkey);
+      const chip = e.target.closest('[data-cat]');
+      if (chip) {
+        prefs.cat = chip.dataset.cat;
+        save();
+        render();
+        chip.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+        return;
+      }
+      const pickBtn = e.target.closest('[data-unitpick]');
+      if (pickBtn) return choose(pickBtn.dataset.unitpick);
+      const row = e.target.closest('[data-unit]');
+      if (row) {
+        sel().to = row.dataset.unit;
+        save();
+        render();
+      }
+    });
+
+    el.swap.addEventListener('click', () => {
+      const s = sel();
+      [s.from, s.to] = [s.to, s.from];
+      save();
+      render();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (el.view.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target.closest('input, textarea, dialog')) return;
+      const key = Keypad.amountKeyFromEvent(e);
+      if (key === null) return;
+      e.preventDefault();
+      press(key);
+    });
+
+    Keypad.onSwipe(el.amount.closest('.fx-pair'), () => press('back'));
+    window.addEventListener('resize', () => { if (!el.view.hidden) render(); });
+
+    render();
+    return { show: render };
+  }
+
+  return { CATEGORIES, convertUnit, formatValue, init };
+});

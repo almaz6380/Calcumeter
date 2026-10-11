@@ -6,10 +6,11 @@
  * die eingebauten EZB-Kurse verwendet.
  */
 (function (global, factory) {
-  const api = factory();
+  const keypad = typeof module === 'object' && module.exports ? require('./keypad.js') : global.Keypad;
+  const api = factory(keypad);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else global.Fx = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Keypad) {
   'use strict';
 
   const RATES_KEY = 'calcumeter.fx.rates';
@@ -32,6 +33,7 @@
   };
 
   const POPULAR = ['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'TRY', 'PLN', 'CNY', 'CAD', 'AUD', 'SEK', 'CZK'];
+  const DEFAULT_FAVORITES = ['USD', 'GBP', 'CHF', 'JPY', 'TRY', 'PLN', 'CNY', 'CAD'];
 
   // ---------- Reine Logik ----------
 
@@ -41,11 +43,7 @@
   }
 
   // Deutsche Schreibweise erlauben: "1.234,50" und "49,90*3"
-  function normalizeAmount(text) {
-    let t = String(text).replace(/\s/g, '');
-    if (t.includes(',')) t = t.replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(/,/g, '.');
-    return t;
-  }
+  const { normalizeAmount } = Keypad;
 
   // ---------- Kurse laden ----------
 
@@ -87,19 +85,11 @@
     return BADGE_COLORS[h % BADGE_COLORS.length];
   }
 
-  // Betrag beim Tippen mit Tausenderpunkten zeigen ("12345,6" → "12.345,6")
-  function groupTyped(text) {
-    const m = /^(\d*)(,\d*)?$/.exec(text);
-    if (!m) return text.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−');
-    return (m[1] || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (m[2] || '');
-  }
-
-  function init(hooks) {
+  function init(hub) {
     const $ = (id) => document.getElementById(id);
     const el = {
       view: $('view-fx'),
       amount: $('fx-amount'), result: $('fx-result'),
-      from: $('fx-from'), to: $('fx-to'),
       fromCode: $('fx-from-code'), toCode: $('fx-to-code'),
       fromName: $('fx-from-name'), toName: $('fx-to-name'),
       fromBadge: $('fx-from-badge'), toBadge: $('fx-to-badge'),
@@ -112,7 +102,7 @@
     let offline = false;
     let loading = null;
     let lastValue = null;
-    const prefs = { from: 'EUR', to: 'USD', amount: '100' };
+    const prefs = { from: 'EUR', to: 'USD', amount: '100', favorites: DEFAULT_FAVORITES.slice() };
 
     try {
       const saved = JSON.parse(localStorage.getItem(RATES_KEY) || 'null');
@@ -122,6 +112,7 @@
     // ältere Versionen speicherten den Betrag als freien Text, z. B. "12.5"
     prefs.amount = String(prefs.amount);
     prefs.amount = prefs.amount.includes(',') ? prefs.amount.replace(/\./g, '') : prefs.amount.replace(/\./g, ',');
+    if (!Array.isArray(prefs.favorites)) prefs.favorites = DEFAULT_FAVORITES.slice();
 
     const savePrefs = () => {
       try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) { /* ignorieren */ }
@@ -161,30 +152,14 @@
     };
     const rateFmt = new Intl.NumberFormat('de-DE', { maximumSignificantDigits: 5 });
 
-    function fillSelects() {
-      const codes = Object.keys(data.rates).sort();
-      const popular = POPULAR.filter((c) => c in data.rates);
-      const others = codes.filter((c) => !popular.includes(c));
-      for (const select of [el.from, el.to]) {
-        const current = select === el.from ? prefs.from : prefs.to;
-        select.replaceChildren();
-        const group = (label, list) => {
-          const g = document.createElement('optgroup');
-          g.label = label;
-          for (const c of list) g.append(new Option(`${c} – ${nameOf(c)}`, c));
-          select.append(g);
-        };
-        group('Häufig', popular);
-        group('Alle Währungen', others);
-        select.value = current in data.rates ? current : (select === el.from ? 'EUR' : 'USD');
-      }
-      prefs.from = el.from.value;
-      prefs.to = el.to.value;
+    function ensureKnown() {
+      if (!(prefs.from in data.rates)) prefs.from = 'EUR';
+      if (!(prefs.to in data.rates)) prefs.to = 'USD';
     }
 
     function amountValue() {
       const text = prefs.amount.trim();
-      if (text === '') return { value: 0 };
+      if (text === '' || text === '-') return { value: 0 };
       try {
         return { value: evaluate(normalizeAmount(text)) };
       } catch (e) {
@@ -199,10 +174,41 @@
       node.style.background = badgeColor(code);
     }
 
+    function listRow(c, base, from) {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'fx-li';
+      btn.dataset.code = c;
+      btn.title = `${c} als Zielwährung wählen`;
+      const left = document.createElement('span');
+      const code = document.createElement('strong');
+      code.className = 'fx-li-code';
+      code.textContent = c;
+      const name = document.createElement('span');
+      name.className = 'fx-li-name';
+      name.textContent = nameOf(c);
+      left.append(code, name);
+      const right = document.createElement('span');
+      right.className = 'fx-li-val';
+      right.textContent = money(convert(base, from, c, data.rates), c);
+      btn.append(left, right);
+      const star = document.createElement('button');
+      star.type = 'button';
+      star.className = 'fx-star';
+      star.dataset.unfav = c;
+      star.setAttribute('aria-label', `${c} aus den Favoriten entfernen`);
+      star.title = 'Aus Favoriten entfernen';
+      star.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>';
+      li.append(btn, star);
+      return li;
+    }
+
     function render() {
+      ensureKnown();
       const { from, to } = prefs;
       const { value, error } = amountValue();
-      el.amount.textContent = groupTyped(prefs.amount);
+      el.amount.textContent = Keypad.groupTyped(prefs.amount);
       el.amount.classList.toggle('invalid', Boolean(error));
       if (error) {
         el.result.textContent = '–';
@@ -221,30 +227,16 @@
       el.rate.textContent = `1 ${from} = ${rateFmt.format(convert(1, from, to, data.rates))} ${to}`;
 
       const base = error ? 0 : value;
-      el.list.replaceChildren(...POPULAR
+      const rows = prefs.favorites
         .filter((c) => c in data.rates && c !== from && c !== to)
-        .slice(0, 8)
-        .map((c) => {
-          const li = document.createElement('li');
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.dataset.code = c;
-          btn.title = `${c} als Zielwährung wählen`;
-          const left = document.createElement('span');
-          const code = document.createElement('strong');
-          code.className = 'fx-li-code';
-          code.textContent = c;
-          const name = document.createElement('span');
-          name.className = 'fx-li-name';
-          name.textContent = nameOf(c);
-          left.append(code, name);
-          const right = document.createElement('span');
-          right.className = 'fx-li-val';
-          right.textContent = money(convert(base, from, c, data.rates), c);
-          btn.append(left, right);
-          li.append(btn);
-          return li;
-        }));
+        .map((c) => listRow(c, base, from));
+      const addLi = document.createElement('li');
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'fx-add';
+      add.textContent = '+ Währung hinzufügen';
+      addLi.append(add);
+      el.list.replaceChildren(...rows, addLi);
 
       const when = new Date(data.date);
       const dateText = Number.isNaN(when.getTime()) ? data.date
@@ -252,9 +244,9 @@
       el.status.textContent = loading ? 'Aktualisiere …'
         : `${offline ? 'Offline · ' : ''}${data.source.replace(' (eingebaut)', '')} · ${dateText}`;
 
-      if (!el.view.hidden && hooks.fitText) {
-        hooks.fitText(el.amount, 18);
-        hooks.fitText(el.result, 18);
+      if (!el.view.hidden) {
+        hub.fitText(el.amount, 18);
+        hub.fitText(el.result, 18);
       }
     }
 
@@ -267,7 +259,6 @@
           data = { ...fresh, fetchedAt: Date.now() };
           offline = false;
           try { localStorage.setItem(RATES_KEY, JSON.stringify(data)); } catch (_) { /* ignorieren */ }
-          fillSelects();
         })
         .catch(() => { offline = true; })
         .finally(() => {
@@ -278,79 +269,102 @@
       return loading;
     }
 
-    function setAmount(text) {
-      prefs.amount = text.slice(0, 18);
+    function currencyItems(includeFavorites = true) {
+      const codes = Object.keys(data.rates).sort();
+      return codes.map((c) => ({
+        value: c,
+        label: `${c} – ${nameOf(c)}`,
+        group: includeFavorites && (prefs.favorites.includes(c) || c === 'EUR') ? 'Favoriten' : 'Alle Währungen',
+      }));
+    }
+
+    async function choose(which) {
+      const value = await hub.pick({
+        title: which === 'from' ? 'Ausgangswährung' : 'Zielwährung',
+        items: currencyItems(),
+        groups: ['Favoriten', 'Alle Währungen'],
+        current: prefs[which],
+        searchable: true,
+      });
+      if (!value) return;
+      prefs[which] = value;
       savePrefs();
       render();
     }
 
-    // Eingabe über Tasten oder Tastatur
+    async function addFavorite() {
+      const value = await hub.pick({
+        title: 'Favorit hinzufügen',
+        items: currencyItems(false).filter((it) => !prefs.favorites.includes(it.value)),
+        groups: ['Alle Währungen'],
+        searchable: true,
+      });
+      if (!value) return;
+      prefs.favorites.push(value);
+      savePrefs();
+      render();
+    }
+
+    function setAmount(text) {
+      prefs.amount = text;
+      savePrefs();
+      render();
+    }
+
     function press(key) {
-      const a = prefs.amount === '0' ? '' : prefs.amount;
-      if (/^\d+$/.test(key)) {
-        if (a === '' && key === '00') return setAmount('0');
-        setAmount(a + key);
-      } else if (key === ',') {
-        if (/,\d*$/.test(a)) return;
-        setAmount((/\d$/.test(a) ? a : `${a}0`) + ',');
-      } else if (/^[+\-*/()]$/.test(key)) {
-        setAmount((a || '0') + key);
-      } else if (key === 'back') {
-        setAmount(a.slice(0, -1));
-      } else if (key === 'clear') {
-        setAmount('');
-      } else if (key === 'ans') {
-        setAmount(String(hooks.getAns()).replace('.', ','));
+      if (key === 'ans') {
+        setAmount(String(hub.getAns()).replace('.', ','));
       } else if (key === 'equals') {
         const { value, error } = amountValue();
         if (!error) setAmount(String(Math.round(value * 1e6) / 1e6).replace('.', ','));
       } else if (key === 'to-calc') {
         if (lastValue === null) return;
-        hooks.useInCalc(Math.abs(lastValue) >= 0.01 ? Math.round(lastValue * 100) / 100 : lastValue);
+        hub.useInCalc(Math.abs(lastValue) >= 0.01 ? Math.round(lastValue * 100) / 100 : lastValue);
+      } else {
+        setAmount(Keypad.editAmount(prefs.amount, key));
       }
     }
 
     el.view.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-fxkey]');
-      if (!btn) return;
-      press(btn.dataset.fxkey);
+      const key = e.target.closest('[data-fxkey]');
+      if (key) return press(key.dataset.fxkey);
+      const pickBtn = e.target.closest('[data-pick]');
+      if (pickBtn) return choose(pickBtn.dataset.pick);
+      const unfav = e.target.closest('[data-unfav]');
+      if (unfav) {
+        prefs.favorites = prefs.favorites.filter((c) => c !== unfav.dataset.unfav);
+        savePrefs();
+        render();
+        hub.toast(`${unfav.dataset.unfav} entfernt`);
+        return;
+      }
+      if (e.target.closest('.fx-add')) return addFavorite();
+      const row = e.target.closest('[data-code]');
+      if (row) {
+        prefs.to = row.dataset.code;
+        savePrefs();
+        render();
+      }
     });
 
     document.addEventListener('keydown', (e) => {
-      if (el.view.hidden || e.ctrlKey || e.metaKey || e.altKey || e.target.closest('select')) return;
-      const k = e.key;
-      let key = null;
-      if (/^[0-9]$/.test(k) || /^[+\-*/()]$/.test(k)) key = k;
-      else if (k === ',' || k === '.') key = ',';
-      else if (k === 'Backspace') key = 'back';
-      else if (k === 'Escape' || k === 'Delete') key = 'clear';
-      else if (k === 'Enter' || k === '=') key = 'equals';
+      if (el.view.hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.target.closest('input, textarea, dialog')) return;
+      const key = Keypad.amountKeyFromEvent(e);
       if (key === null) return;
       e.preventDefault();
       press(key);
     });
 
-    el.from.addEventListener('change', () => { prefs.from = el.from.value; savePrefs(); render(); });
-    el.to.addEventListener('change', () => { prefs.to = el.to.value; savePrefs(); render(); });
+    Keypad.onSwipe(el.amount.closest('.fx-pair'), () => press('back'));
     el.swap.addEventListener('click', () => {
       [prefs.from, prefs.to] = [prefs.to, prefs.from];
-      el.from.value = prefs.from;
-      el.to.value = prefs.to;
-      savePrefs();
-      render();
-    });
-    el.list.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-code]');
-      if (!btn) return;
-      prefs.to = btn.dataset.code;
-      el.to.value = prefs.to;
       savePrefs();
       render();
     });
     el.refresh.addEventListener('click', () => refresh(true));
     window.addEventListener('resize', () => { if (!el.view.hidden) render(); });
 
-    fillSelects();
     render();
 
     return {
