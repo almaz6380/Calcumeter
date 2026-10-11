@@ -6,11 +6,11 @@
  * Rangfolge wie in C: unär > * / % > + - > << >> > & > ^ > |
  */
 (function (global, factory) {
-  const keypad = typeof module === 'object' && module.exports ? require('./keypad.js') : global.Keypad;
-  const api = factory(keypad);
+  const node = typeof module === 'object' && module.exports;
+  const api = factory(node ? require('./keypad.js') : global.Keypad, node ? require('./i18n.js') : global.I18n);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else global.Prog = api;
-})(typeof self !== 'undefined' ? self : this, function (Keypad) {
+})(typeof self !== 'undefined' ? self : this, function (Keypad, I18n) {
   'use strict';
 
   const PREFS_KEY = 'calcumeter.prog';
@@ -119,7 +119,7 @@
     if (base === 10) {
       const neg = raw.startsWith('-');
       const digits = neg ? raw.slice(1) : raw;
-      return (neg ? '−' : '') + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      return (neg ? '−' : '') + digits.replace(/\B(?=(\d{3})+(?!\d))/g, I18n.locale().group);
     }
     const size = base === 8 ? 3 : 4;
     return raw.replace(new RegExp(`\\B(?=(.{${size}})+(?!.))`, 'g'), ' ');
@@ -253,7 +253,7 @@
           const { value, error } = current();
           if (error) state.error = error;
           else setValue(value);
-          if (error) hub.toast(error);
+          if (error) hub.toast(I18n.t(error));
           break;
         }
         case 'neg':
