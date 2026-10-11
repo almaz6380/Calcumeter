@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Kursy walut</string>
+    <string name="widget_rate_desc">Twoje ulubione waluty, aktualizowane automatycznie</string>
+    <string name="widget_quick_name">Calcumeter – szybki start</string>
+    <string name="widget_quick_desc">Otwórz od razu kalkulator, waluty, jednostki lub wykres</string>
+    <string name="widget_view_calc">Kalkulator</string>
+    <string name="widget_view_fx">Waluty</string>
+    <string name="widget_view_units">Jednostki</string>
+    <string name="widget_view_graph">Wykres</string>
+</resources>

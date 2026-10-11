@@ -105,7 +105,7 @@
   '{name}: von': '{name}: da',
   '{name}: nach': '{name}: a',
   '{name} als Zieleinheit wählen': 'Usa {name} come unità di destinazione',
-  'bei': 'a',
+  'bei': '=',
   'Suchen …': 'Cerca …',
   'Nichts gefunden.': 'Nessun risultato.',
   'Funktionsplotter': 'Grafici di funzioni',

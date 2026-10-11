@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Wisselkoersen</string>
+    <string name="widget_rate_desc">Je favoriete valuta, automatisch bijgewerkt</string>
+    <string name="widget_quick_name">Calcumeter snelstart</string>
+    <string name="widget_quick_desc">Open direct rekenmachine, valuta, eenheden of grafiek</string>
+    <string name="widget_view_calc">Rekenen</string>
+    <string name="widget_view_fx">Valuta</string>
+    <string name="widget_view_units">Eenheden</string>
+    <string name="widget_view_graph">Grafiek</string>
+</resources>

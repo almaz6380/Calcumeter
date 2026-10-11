@@ -105,7 +105,7 @@
   '{name}: von': '{name}\u00a0: de',
   '{name}: nach': '{name}\u00a0: vers',
   '{name} als Zieleinheit wählen': 'Utiliser {name} comme unité cible',
-  'bei': 'à',
+  'bei': '=',
   'Suchen …': 'Rechercher …',
   'Nichts gefunden.': 'Aucun résultat.',
   'Funktionsplotter': 'Traceur de fonctions',

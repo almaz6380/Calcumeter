@@ -37,6 +37,19 @@ enum L10n {
     static let table: [String: [String: String]] = [
         "de": ["widget_view_fx": "Währung", "widget_view_units": "Einheiten", "widget_view_graph": "Graph"],
         "en": ["widget_view_fx": "Currency", "widget_view_units": "Units", "widget_view_graph": "Graph"],
+        "es": ["widget_view_fx": "Divisas", "widget_view_units": "Unidades", "widget_view_graph": "Gráfica"],
+        "fr": ["widget_view_fx": "Devises", "widget_view_units": "Unités", "widget_view_graph": "Graphique"],
+        "it": ["widget_view_fx": "Valute", "widget_view_units": "Unità", "widget_view_graph": "Grafico"],
+        "pt": ["widget_view_fx": "Moedas", "widget_view_units": "Unidades", "widget_view_graph": "Gráfico"],
+        "tr": ["widget_view_fx": "Döviz", "widget_view_units": "Birim", "widget_view_graph": "Grafik"],
+        "pl": ["widget_view_fx": "Waluty", "widget_view_units": "Jednostki", "widget_view_graph": "Wykres"],
+        "nl": ["widget_view_fx": "Valuta", "widget_view_units": "Eenheden", "widget_view_graph": "Grafiek"],
+        "sv": ["widget_view_fx": "Valuta", "widget_view_units": "Enheter", "widget_view_graph": "Graf"],
+        "da": ["widget_view_fx": "Valuta", "widget_view_units": "Enheder", "widget_view_graph": "Graf"],
+        "ja": ["widget_view_fx": "通貨", "widget_view_units": "単位", "widget_view_graph": "グラフ"],
+        "ko": ["widget_view_fx": "환율", "widget_view_units": "단위", "widget_view_graph": "그래프"],
+        "zh-Hans": ["widget_view_fx": "汇率", "widget_view_units": "单位", "widget_view_graph": "绘图"],
+        "zh-Hant": ["widget_view_fx": "匯率", "widget_view_units": "單位", "widget_view_graph": "繪圖"],
     ]
 
     /// Erste unterstützte Gerätesprache, sonst Englisch

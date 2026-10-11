@@ -68,6 +68,19 @@
 	<array>
 		<string>de</string>
 		<string>en</string>
+		<string>es</string>
+		<string>fr</string>
+		<string>it</string>
+		<string>pt</string>
+		<string>tr</string>
+		<string>pl</string>
+		<string>nl</string>
+		<string>sv</string>
+		<string>da</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>zh-Hans</string>
+		<string>zh-Hant</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">환율</string>
+    <string name="widget_rate_desc">즐겨찾는 통화, 자동 업데이트</string>
+    <string name="widget_quick_name">Calcumeter 빠른 실행</string>
+    <string name="widget_quick_desc">계산기, 환율, 단위, 그래프를 바로 열기</string>
+    <string name="widget_view_calc">계산기</string>
+    <string name="widget_view_fx">환율</string>
+    <string name="widget_view_units">단위</string>
+    <string name="widget_view_graph">그래프</string>
+</resources>

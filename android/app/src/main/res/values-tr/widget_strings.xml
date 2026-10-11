@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Döviz kurları</string>
+    <string name="widget_rate_desc">Favori para birimleriniz, otomatik güncellenir</string>
+    <string name="widget_quick_name">Calcumeter hızlı başlat</string>
+    <string name="widget_quick_desc">Hesap makinesini, döviz, birim veya grafik bölümünü doğrudan açın</string>
+    <string name="widget_view_calc">Hesap</string>
+    <string name="widget_view_fx">Döviz</string>
+    <string name="widget_view_units">Birim</string>
+    <string name="widget_view_graph">Grafik</string>
+</resources>

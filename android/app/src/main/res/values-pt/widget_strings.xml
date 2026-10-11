@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Câmbio</string>
+    <string name="widget_rate_desc">Suas moedas favoritas, atualizadas automaticamente</string>
+    <string name="widget_quick_name">Acesso rápido Calcumeter</string>
+    <string name="widget_quick_desc">Abra direto a calculadora, moedas, unidades ou gráficos</string>
+    <string name="widget_view_calc">Calc</string>
+    <string name="widget_view_fx">Moedas</string>
+    <string name="widget_view_units">Unidades</string>
+    <string name="widget_view_graph">Gráfico</string>
+</resources>

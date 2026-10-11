@@ -105,7 +105,7 @@
   '{name}: von': '{name}: de',
   '{name}: nach': '{name}: a',
   '{name} als Zieleinheit wählen': 'Usar {name} como unidad de destino',
-  'bei': 'a',
+  'bei': '=',
   'Suchen …': 'Buscar …',
   'Nichts gefunden.': 'No hay resultados.',
   'Funktionsplotter': 'Gráficas de funciones',

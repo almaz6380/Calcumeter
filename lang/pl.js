@@ -92,7 +92,7 @@
   'Betrag eingeben': 'Wpisz kwotę',
   'Letztes Rechner-Ergebnis übernehmen': 'Użyj ostatniego wyniku kalkulatora',
   'Ergebnis in den Rechner übernehmen': 'Przenieś wynik do kalkulatora',
-  '→ Rechner': '→ Kalkulator',
+  '→ Rechner': '→ Kalk.',
   'Anzeige': 'Reklama',
   'Geld ins Ausland senden – oft günstiger als die Bank': 'Wysyłaj pieniądze za granicę – często taniej niż w banku',
   'Kategorie': 'Kategoria',
