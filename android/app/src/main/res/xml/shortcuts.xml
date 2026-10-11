@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App-Shortcuts: langes Drücken auf das App-Symbol -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="fx"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_fx"
+        android:shortcutShortLabel="@string/widget_view_fx">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="calcumeter://view/fx"
+            android:targetPackage="com.almaz6380.calcumeter"
+            android:targetClass="com.almaz6380.calcumeter.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="units"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_units"
+        android:shortcutShortLabel="@string/widget_view_units">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="calcumeter://view/units"
+            android:targetPackage="com.almaz6380.calcumeter"
+            android:targetClass="com.almaz6380.calcumeter.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="graph"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_graph"
+        android:shortcutShortLabel="@string/widget_view_graph">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="calcumeter://view/graph"
+            android:targetPackage="com.almaz6380.calcumeter"
+            android:targetClass="com.almaz6380.calcumeter.MainActivity" />
+    </shortcut>
+</shortcuts>

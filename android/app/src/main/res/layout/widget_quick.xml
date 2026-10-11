@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Schnellstart-Widget: vier Bereiche -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="horizontal"
+    android:padding="8dp">
+    <TextView
+        android:id="@+id/quick_calc"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_btn_accent"
+        android:gravity="center"
+        android:text="@string/widget_view_calc"
+        android:textColor="#1C1407"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="13sp" />
+    <TextView
+        android:id="@+id/quick_fx"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_btn"
+        android:gravity="center"
+        android:text="@string/widget_view_fx"
+        android:textColor="#F4F4F5"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="13sp" />
+    <TextView
+        android:id="@+id/quick_units"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_btn"
+        android:gravity="center"
+        android:text="@string/widget_view_units"
+        android:textColor="#F4F4F5"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="13sp" />
+    <TextView
+        android:id="@+id/quick_graph"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/widget_btn"
+        android:gravity="center"
+        android:text="@string/widget_view_graph"
+        android:textColor="#F4F4F5"
+        android:fontFamily="sans-serif-medium"
+        android:textSize="13sp" />
+</LinearLayout>

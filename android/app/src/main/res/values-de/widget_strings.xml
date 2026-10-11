@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Wechselkurse</string>
+    <string name="widget_rate_desc">Deine Lieblingswährungen, automatisch aktualisiert</string>
+    <string name="widget_quick_name">Calcumeter Schnellstart</string>
+    <string name="widget_quick_desc">Rechner, Währung, Einheiten oder Graph direkt öffnen</string>
+    <string name="widget_view_calc">Rechner</string>
+    <string name="widget_view_fx">Währung</string>
+    <string name="widget_view_units">Einheiten</string>
+    <string name="widget_view_graph">Graph</string>
+</resources>

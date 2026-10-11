@@ -308,6 +308,7 @@
       else b.removeAttribute('aria-current');
     });
     if (modules[view]) modules[view].show();
+    window.Money.setView(view);
     save();
     if (view === 'calc') render();
   }
@@ -353,6 +354,7 @@
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => applySettings());
 
   function openMenu() {
+    window.Money.renderMenu();
     els.menu.showModal();
     const current = els.menu.querySelector('[aria-current="page"]');
     if (current) current.focus();
@@ -663,6 +665,8 @@
   load();
   applySettings();
   refreshTexts();
+  window.Money.wire();
+  window.Money.init({ toast });
   render();
   renderHistory();
   setView(state.view);

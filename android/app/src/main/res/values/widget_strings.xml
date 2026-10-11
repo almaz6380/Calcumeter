@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_rate_name">Exchange rates</string>
+    <string name="widget_rate_desc">Your favourite currencies, updated automatically</string>
+    <string name="widget_quick_name">Calcumeter quick start</string>
+    <string name="widget_quick_desc">Open calculator, currency, units or graph directly</string>
+    <string name="widget_view_calc">Calc</string>
+    <string name="widget_view_fx">Currency</string>
+    <string name="widget_view_units">Units</string>
+    <string name="widget_view_graph">Graph</string>
+</resources>

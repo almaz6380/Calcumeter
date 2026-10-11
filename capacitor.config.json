@@ -1,0 +1,12 @@
+{
+  "appId": "com.almaz6380.calcumeter",
+  "appName": "Calcumeter",
+  "webDir": "www",
+  "backgroundColor": "#0E0F11",
+  "android": { "backgroundColor": "#0E0F11" },
+  "ios": { "backgroundColor": "#0E0F11", "contentInset": "never", "scheme": "Calcumeter" },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 600, "launchAutoHide": true, "backgroundColor": "#0E0F11", "showSpinner": false },
+    "StatusBar": { "overlaysWebView": true, "style": "DARK" }
+  }
+}

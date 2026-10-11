@@ -1,0 +1,50 @@
+# Calcumeter – notes for Claude
+
+Calculator web app (GitHub Pages) that is also wrapped as a store app with Capacitor 8 (like Mountain-Ride).
+The owner talks German: answer in German. UI in German and English.
+
+## Files
+- `index.html`, `style.css` – the whole UI. Colors only via tokens on `:root` (dark default, light under
+  `prefers-color-scheme: light` and `[data-theme="light"]`).
+- `calculator.js` – expression parser (no eval), `evaluate`, `compile` (variable x for the graph), `format`.
+- `app.js` – calculator view, history, memory, menu/settings (theme, language, vibration), view switching (`setView`),
+  sharing, the `hub` object handed to the other views.
+- `keypad.js` – shared amount input (amounts are stored with a dot, shown per language), picker sheet with search,
+  swipe/long-press gestures, haptics.
+- `currency.js` (favourites, rates from open.er-api.com, fallback Frankfurter/ECB, `REFERRAL` link slot, feeds the
+  widget), `units.js`, `graph.js` (canvas), `programmer.js` (BigInt).
+- `i18n.js` – German is the source text; `EN` maps German → English. `t('deutscher Text')` in JS, static HTML is
+  translated by `apply()`. **Every new UI text needs an `EN` entry** (`test/i18n.test.js` checks this).
+  Numbers follow the language: de `1.234,5` and `log(8;2)`, en `1,234.5` and `log(8,2)`.
+- `native.js` – bridge to Capacitor (share, haptics, deep links `calcumeter://view/<view>` and `#<view>`,
+  `widgetData`). `money.js` – AdMob banner (not in the calculator view) + rewarded video (24 h ad-free) +
+  RevenueCat `no_ads`; test ids until release. Both do nothing on the web.
+- `privacy.html`, `imprint.html` + `assets/legal/` (de/en). `assets/fonts/` – Geist, served locally.
+- `sw.js` – **bump `CACHE` (`calcumeter-vNN`) on every web release** and list new files in `ASSETS`.
+- Store app: `package.json`, `capacitor.config.json` (`com.almaz6380.calcumeter`), `android/`, `ios/` (checked in;
+  `www/`, `dist/`, `node_modules/` are not). Native widgets: Android `android/app/src/main/java/.../RateWidget.java`,
+  `QuickWidget.java`, `WidgetStore.java`, `WidgetBridgePlugin.java` + `res/layout/widget_*.xml`,
+  `res/xml/*_widget_info.xml`, `res/xml/shortcuts.xml`; iOS `ios/App/App/CalcumeterBridge.swift` (plugin,
+  shortcuts, `MainViewController`) and `ios/App/WidgetSource/` (widget extension, added as a target in Xcode by the
+  owner – see `docs/store-veroeffentlichen.md`). App group `group.com.almaz6380.calcumeter`.
+- `store/` – listing texts, screenshots (`tools/store-shots.js`), feature graphic, products, privacy answers.
+
+## Release workflow
+1. Bump `CACHE` in `sw.js`; `npm test`.
+2. Commit and push `master`.
+3. `python3 tools/build.py` → copy `dist/` into the `gh-pages` worktree (replace everything), commit, push `gh-pages`.
+4. Check `https://almaz6380.github.io/Calcumeter/sw.js` shows the new version.
+5. Store app: `npm run sync` (builds `www/` and copies it into both native projects).
+
+## Testing
+- `npm test` (node test runner): parser, units, programmer, currency, i18n completeness.
+- Serve with `python3 -m http.server 8080` and drive with Playwright (`/opt/node-tools/node_modules/playwright`);
+  route `https://open.er-api.com/**` to a saved JSON. Use `locale: 'de-DE'` or `'en-GB'` – the language is
+  detected from the browser.
+- Android debug build: Android SDK in `/root/android-sdk` (`sdk.dir` in `android/local.properties`), Maven Central
+  through Google's mirror (`~/.gradle/init.d/mirror.gradle`), then `cd android && ./gradlew assembleDebug`.
+- Swift can only be syntax-checked here (`swiftc -parse`); real builds happen in the owner's Xcode.
+
+## Owner preferences
+- Design matters: check visual changes with screenshots on phone portrait/landscape and desktop before shipping.
+- No ads in the calculator itself and no full-screen ads.

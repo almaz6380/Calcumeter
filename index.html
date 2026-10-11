@@ -400,6 +400,21 @@
         <button type="button" class="switch" id="set-vibrate" role="switch" aria-checked="true" aria-labelledby="set-vibrate-label"><span></span></button>
       </div>
       <p class="setting-hint">Tipp: Über die Anzeige wischen löscht die letzte Eingabe, AC lange drücken löscht auch den Speicher.</p>
+      <div id="ads-section" hidden>
+        <h2 class="sheet-sub">Werbung</h2>
+        <button type="button" class="money-row" id="ad-reward">
+          <span class="vi-text"><strong>24 Stunden werbefrei</strong><small>Kurzes Video ansehen</small></span>
+        </button>
+        <button type="button" class="money-row" id="ad-buy">
+          <span class="vi-text"><strong>Werbefrei kaufen</strong><small>Einmalig, für immer ohne Werbung</small></span>
+          <span class="money-price" id="ad-buy-price" data-no-i18n></span>
+        </button>
+        <p class="setting-hint" id="ad-status" hidden></p>
+        <p class="legal-links">
+          <button type="button" class="text-btn" id="ad-restore" hidden>Käufe wiederherstellen</button>
+          <button type="button" class="text-btn" id="ad-privacy" hidden>Werbe-Einstellungen</button>
+        </p>
+      </div>
       <p class="legal-links"><a href="privacy.html" data-legal>Datenschutz</a><span aria-hidden="true">·</span><a href="imprint.html" data-legal>Impressum</a></p>
     </div>
   </dialog>
@@ -414,6 +429,7 @@
   <script src="units.js"></script>
   <script src="programmer.js"></script>
   <script src="graph.js"></script>
+  <script src="money.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

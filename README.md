@@ -1,16 +1,18 @@
 # Calcumeter
 
-Taschenrechner mit wissenschaftlichen Funktionen, Währungs- und Einheitenrechner, Funktionsplotter und Programmierer-Modus als Web-App – ohne Abhängigkeiten, offline-fähig und installierbar (PWA).
+Taschenrechner mit wissenschaftlichen Funktionen, Währungs- und Einheitenrechner, Funktionsplotter und Programmierer-Modus – als Web-App (offline-fähig, installierbar) und als Store-App für Android und iOS mit Widgets. Deutsch und Englisch.
 
 Rechnen und installieren: **https://almaz6380.github.io/Calcumeter/**
 
-Veröffentlichen: die App-Dateien auf den Branch `gh-pages` kopieren und pushen.
+Veröffentlichen (Web): `python3 tools/build.py` und den Inhalt von `dist/` auf den Branch `gh-pages` legen.
+Store-App: siehe [docs/store-veroeffentlichen.md](docs/store-veroeffentlichen.md).
 
 ## Starten
 
 ```bash
 npm start          # startet einen lokalen Server auf http://localhost:8080
-npm test           # führt die Tests des Rechenkerns aus
+npm test           # führt die Tests aus
+npm run sync       # Store-App: www/ bauen und in die Android-/iOS-Projekte kopieren
 ```
 
 Alternativ `index.html` einfach im Browser öffnen.
@@ -24,6 +26,9 @@ Alternativ `index.html` einfach im Browser öffnen.
 - **Währung**: Umrechnung zwischen rund 160 Währungen mit Tageskursen (ExchangeRate-API, ersatzweise EZB). Ohne Netz gelten die zuletzt geladenen bzw. eingebauten EZB-Kurse. Der Betrag wird über die eigene Zifferntastatur eingegeben (am Computer auch per Tastatur, dort mit Rechenzeichen wie `49,90*3` und Enter). **Ans** übernimmt das letzte Rechner-Ergebnis, **→ Rechner** schickt das umgerechnete Ergebnis in den Rechner. Währungen wählt man über ein Auswahlblatt mit Suche; die Liste darunter zeigt eigene Favoriten (Stern entfernt, „+ Währung hinzufügen“ ergänzt).
 - **Einheiten**: Länge, Fläche, Volumen, Gewicht, Temperatur, Geschwindigkeit, Zeit, Daten, Energie, Druck – gleiche Bedienung wie der Währungsrechner.
 - **Graph**: bis zu drei Funktionen von `x` (Bogenmaß), z. B. `sin(x)` oder `x^2/4−1`. Ziehen verschiebt, Mausrad oder zwei Finger zoomen, Doppeltipp setzt zurück, Tippen auf eine Kurve zeigt den Punkt.
+- **Teilen**: Ergebnis, Umrechnung oder Einheit über das Teilen-Menü (im Browser: in die Zwischenablage).
+- **Sprache**: Deutsch oder Englisch (automatisch oder im Menü); Zahlen und Trennzeichen folgen der Sprache.
+- **Store-App**: Wechselkurs- und Schnellstart-Widget, App-Shortcuts (Währung, Einheiten, Graph), Banner nur außerhalb des Rechners, 24 h werbefrei per Video oder dauerhaft per Kauf.
 - **Programmierer**: Ganzzahlen in HEX/DEC/OCT/BIN mit 8/16/32/64 Bit (Zweierkomplement), `AND OR XOR NOT << >> mod`, Bit-Ansicht zum Antippen einzelner Bits.
 
 ## Funktionen
@@ -63,6 +68,9 @@ Alternativ `index.html` einfach im Browser öffnen.
 - `units.js` – Einheitenrechner
 - `graph.js` – Funktionsplotter (Canvas)
 - `programmer.js` – Programmierer-Rechner (BigInt)
+- `i18n.js` – Deutsch/Englisch; `native.js` – Brücke zur Store-App; `money.js` – Werbung und Kauf (nur App)
+- `privacy.html`, `imprint.html`, `assets/` – Rechtstexte, Schrift
+- `android/`, `ios/`, `capacitor.config.json`, `resources/`, `store/`, `docs/` – Store-App, Widgets, Store-Material
 - `index.html`, `style.css` – Oberfläche
 - `sw.js`, `manifest.webmanifest`, `icons/` – Offline-Betrieb, Installation und App-Icons
 - `test/` – Tests mit dem eingebauten Node-Testrunner

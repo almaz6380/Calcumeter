@@ -212,8 +212,26 @@
       return li;
     }
 
+    // Wechselkurs-Widget der Store-App mit Basiswährung, Favoriten und Kursen versorgen (nur bei Änderungen)
+    let widgetSig = '';
+    function feedWidget() {
+      if (!window.Native || !window.Native.isApp) return;
+      const sig = [prefs.from, prefs.favorites.join(), data.date, window.I18n.getLang()].join('|');
+      if (sig === widgetSig) return;
+      widgetSig = sig;
+      const when = Date.parse(data.date);
+      window.Native.widgetData({
+        from: prefs.from,
+        favorites: prefs.favorites.filter((c) => c in data.rates),
+        rates: data.rates,
+        updated: Number.isNaN(when) ? 0 : when,
+        lang: window.I18n.getLang(),
+      });
+    }
+
     function render() {
       ensureKnown();
+      feedWidget();
       const { from, to } = prefs;
       const { value, error } = amountValue();
       el.amount.textContent = Keypad.groupTyped(prefs.amount);

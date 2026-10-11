@@ -60,6 +60,7 @@
     'Werbefrei kaufen': 'Remove ads',
     'Einmalig, für immer ohne Werbung': 'One-time purchase, ad-free forever',
     'Käufe wiederherstellen': 'Restore purchases',
+    'Werbe-Einstellungen': 'Ad settings',
     'Werbefrei bis {time}': 'Ad-free until {time}',
     'Danke! Die App ist jetzt werbefrei.': 'Thank you! The app is now ad-free.',
     'Kein Video verfügbar, bitte später erneut versuchen.': 'No video available, please try again later.',
