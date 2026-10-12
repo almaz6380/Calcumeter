@@ -40,6 +40,13 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 3. `python3 tools/build.py` → copy `dist/` into the `gh-pages` worktree (replace everything), commit, push `gh-pages`.
 4. Check `https://almaz6380.github.io/Calcumeter/sw.js` shows the new version.
 5. Store app: `npm run sync` (builds `www/` and copies it into both native projects).
+6. Android release (needs env vars `CALCUMETER_KEYSTORE_BASE64`, `CALCUMETER_KEYSTORE_PASSWORD`, alias `upload`):
+   bump `versionCode` in `android/app/build.gradle`, decode the keystore to a temp file, then
+   `./gradlew bundleRelease -Pandroid.injected.signing.store.file=… -Pandroid.injected.signing.store.password=…
+   -Pandroid.injected.signing.key.alias=upload -Pandroid.injected.signing.key.password=…`.
+   Upload to Google Play with the service account JSON in `PLAY_SERVICE_ACCOUNT_JSON` (Android Publisher API v3:
+   edits.insert → edits.bundles.upload → edits.tracks.update `production` with release notes → edits.commit).
+   Package `com.almaz6380.calcumeter`; in-app product `no_ads`; RevenueCat keys are in `money.js`.
 
 ## Testing
 - `npm test` (node test runner): parser, units, programmer, currency, i18n completeness.
