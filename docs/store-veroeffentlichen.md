@@ -75,7 +75,7 @@ Gebaut und hochgeladen wird auf einem Mac von GitHub (`.github/workflows/ios-rel
 
 Einmalig:
 1. App Store Connect → Benutzer und Zugriff → Integrationen → **App Store Connect API** → Team-Schlüssel **+**
-   (Name „GitHub Calcumeter“, Zugriff **App-Manager**) → `.p8` laden, Schlüssel-ID notieren.
+   (Name „GitHub Calcumeter“, Zugriff **Admin** – nur damit darf Xcode in der Cloud signieren) → `.p8` laden, Schlüssel-ID notieren.
 2. Team-ID: developer.apple.com → Konto → Mitgliedschaftsdetails (10 Zeichen).
 3. GitHub → Repo → Settings → Secrets and variables → Actions → **New repository secret**:
    `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (kompletter Inhalt der .p8). Die Team-ID JU8STVD4SJ steht schon im Projekt.
