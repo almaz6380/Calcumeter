@@ -68,32 +68,23 @@ Nach jeder Änderung an der Web-App wieder `npm run sync`.
    aufbewahren) → `release` → `android/app/release/app-release.aab`.
 4. Bei jedem Update in `android/app/build.gradle` `versionCode` um 1 erhöhen (und `versionName`).
 
-### iOS (App Store) – einmalig: Widget-Ziel anlegen
+### iOS (App Store) – ohne eigenen Mac über GitHub Actions
 
-Das Widget braucht in Xcode ein eigenes Ziel. Das geht nur in Xcode, dauert aber nur ein paar Minuten:
+Das Widget-Ziel `CalcumeterWidgets` ist bereits im Xcode-Projekt (`tools/add-widget-target.rb`).
+Gebaut und hochgeladen wird auf einem Mac von GitHub (`.github/workflows/ios-release.yml`).
 
-1. `npm run ios` öffnet Xcode.
-2. **File → New → Target… → iOS → Widget Extension** → Product Name **`CalcumeterWidgets`**.
-   Häkchen bei „Include Live Activity“, „Include Control“ und „Include Configuration App Intent“ **entfernen** →
-   Finish → die Frage „Activate scheme?“ mit **Cancel** beantworten.
-3. Xcode legt einen Ordner `CalcumeterWidgets` mit Beispieldateien an. Darin **alle `.swift`-Dateien löschen**
-   (Move to Trash).
-4. Die Datei `ios/App/WidgetSource/CalcumeterWidgets.swift` aus dem Finder in diesen Ordner in Xcode ziehen,
-   dabei nur das Ziel **CalcumeterWidgets** anhaken.
-5. Ziel **CalcumeterWidgets** → General → Minimum Deployments: **iOS 15.0**.
-6. Für beide Ziele (**App** und **CalcumeterWidgets**) unter **Signing & Capabilities**: Team = dein Konto,
-   dann **+ Capability → App Groups** → Gruppe **`group.com.almaz6380.calcumeter`** anhaken
-   (beim App-Ziel ist sie schon eingetragen, dort nur kontrollieren).
-   Beim Widget-Ziel kann statt dessen auch `ios/App/WidgetSource/CalcumeterWidgets.entitlements` als
-   „Code Signing Entitlements“ eingetragen werden.
-7. Beim App-Ziel zusätzlich **+ Capability → In-App Purchase**.
+Einmalig:
+1. App Store Connect → Benutzer und Zugriff → Integrationen → **App Store Connect API** → Team-Schlüssel **+**
+   (Name „GitHub Calcumeter“, Zugriff **App-Manager**) → `.p8` laden, Schlüssel-ID notieren.
+2. Team-ID: developer.apple.com → Konto → Mitgliedschaftsdetails (10 Zeichen).
+3. GitHub → Repo → Settings → Secrets and variables → Actions → **New repository secret**:
+   `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (kompletter Inhalt der .p8), `APPLE_TEAM_ID`.
 
-### iOS – bauen und hochladen
+Jede Version: GitHub → **Actions → iOS Release → Run workflow**. Nach etwa 20 Minuten ist der Build in
+App Store Connect (TestFlight), dort auswählen und einreichen. Die Build-Nummer zählt automatisch hoch,
+die Version (`MARKETING_VERSION`, 1.0) steht im Xcode-Projekt.
 
-1. Testen: iPhone anschließen, oben als Ziel wählen → ▶︎. Widgets: Homescreen lange drücken → **+** → Calcumeter.
-   Shortcuts: lange auf das App-Symbol drücken.
-2. Für den Store: Ziel „Any iOS Device“ → **Product → Archive** → „Distribute App“ → App Store Connect → Upload.
-3. Bei jedem Update unter „General“ **Build** um 1 erhöhen.
+Mit eigenem Mac geht es weiterhin klassisch: `npm run ios` → Xcode → Product → Archive → Distribute App.
 
 ## 5. Store-Einträge
 

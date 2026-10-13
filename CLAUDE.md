@@ -30,8 +30,8 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
   `www/`, `dist/`, `node_modules/` are not). Native widgets: Android `android/app/src/main/java/.../RateWidget.java`,
   `QuickWidget.java`, `WidgetStore.java`, `WidgetBridgePlugin.java` + `res/layout/widget_*.xml`,
   `res/xml/*_widget_info.xml`, `res/xml/shortcuts.xml`; iOS `ios/App/App/CalcumeterBridge.swift` (plugin,
-  shortcuts, `MainViewController`) and `ios/App/WidgetSource/` (widget extension, added as a target in Xcode by the
-  owner – see `docs/store-veroeffentlichen.md`). App group `group.com.almaz6380.calcumeter`.
+  shortcuts, `MainViewController`) and `ios/App/WidgetSource/` (widget extension target `CalcumeterWidgets`, already in
+  the Xcode project). App group `group.com.almaz6380.calcumeter`.
 - `store/` – listing texts, screenshots (`tools/store-shots.js`), feature graphic, products, privacy answers.
 
 ## Release workflow
@@ -47,6 +47,11 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
    Upload to Google Play with the service account JSON in `PLAY_SERVICE_ACCOUNT_JSON` (Android Publisher API v3:
    edits.insert → edits.bundles.upload → edits.tracks.update `production` with release notes → edits.commit).
    Package `com.almaz6380.calcumeter`; in-app product `no_ads`; RevenueCat keys are in `money.js`.
+7. iOS release without a Mac: GitHub Actions workflow `.github/workflows/ios-release.yml` (macos-15, automatic signing
+   with an App Store Connect API key from repo secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `APPLE_TEAM_ID`;
+   exports with `destination=upload`). Trigger via the GitHub MCP (`actions_run_trigger`), read logs with `get_job_logs`.
+   The widget target was added to the Xcode project by `tools/add-widget-target.rb` (bundle id
+   `com.almaz6380.calcumeter.widgets`).
 
 ## Testing
 - `npm test` (node test runner): parser, units, programmer, currency, i18n completeness.
