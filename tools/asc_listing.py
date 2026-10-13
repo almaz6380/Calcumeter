@@ -129,19 +129,19 @@ FREQUENCY = {'alcoholTobaccoOrDrugUseOrReferences', 'contests', 'gamblingSimulat
              'horrorOrFearThemes', 'matureOrSuggestiveThemes', 'medicalOrTreatmentInformation',
              'profanityOrCrudeHumor', 'sexualContentGraphicAndNudity', 'sexualContentOrNudity',
              'violenceCartoonOrFantasy', 'violenceRealistic', 'violenceRealisticProlongedGraphicOrSadistic'}
+YES_NO = {'gambling', 'unrestrictedWebAccess', 'lootBox', 'messagingAndChat', 'parentalControls', 'advertising',
+          'healthOrWellnessTopics', 'ageAssurance', 'userGeneratedContent'}
 
 
 @step('Altersfreigabe (4+)')
 def age_rating(asc, info_id):
     decl = asc.get(f'/v1/appInfos/{info_id}/ageRatingDeclaration')['data']
     attrs = {}
-    for k, v in decl['attributes'].items():
-        if k in ('kidsAgeBand', 'ageRatingOverride', 'ageRatingOverrideV2', 'koreaAgeRatingOverride',
-                 'developerAgeRatingInfoUrl'):
-            continue
-        if isinstance(v, str) or k in FREQUENCY:
+    log('    Felder: ' + ', '.join(sorted(decl['attributes'])))
+    for k in decl['attributes']:
+        if k in FREQUENCY:
             attrs[k] = 'NONE'
-        else:   # Ja/Nein-Fragen, auch wenn noch leer (null)
+        elif k in YES_NO:
             attrs[k] = k == 'advertising'   # Werbung: ja, alles andere: nein
     asc.patch(f'/v1/ageRatingDeclarations/{decl["id"]}',
               {'data': {'type': 'ageRatingDeclarations', 'id': decl['id'], 'attributes': attrs}})
