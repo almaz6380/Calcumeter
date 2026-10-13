@@ -5,7 +5,8 @@
  *   node tools/store-shots.js       # schreibt store/screenshots/<sprache>/… und store/feature-graphic.png
  *   LANGS=fr,ja node tools/store-shots.js   # nur einzelne Sprachen
  *
- * iOS 6,9": 1290 × 2796 (430 × 932 bei 3×), Android: 1080 × 1920 (360 × 640 bei 3×).
+ * iOS 6,9": 1290 × 2796 (430 × 932 bei 3×), iPad 13": 2064 × 2752 (1032 × 1376 bei 2×),
+ * Android: 1080 × 1920 (360 × 640 bei 3×).
  */
 const path = require('path');
 const fs = require('fs');
@@ -16,6 +17,7 @@ const OUT = path.join(__dirname, '..', 'store');
 const DEVICES = {
   ios: { width: 430, height: 932, deviceScaleFactor: 3 },
   android: { width: 360, height: 640, deviceScaleFactor: 3 },
+  ipad: { width: 1032, height: 1376, deviceScaleFactor: 2 },
 };
 
 // Beispieldaten, damit jede Ansicht etwas zeigt
@@ -97,7 +99,7 @@ async function featureGraphic(browser, lang) {
 (async () => {
   const browser = await chromium.launch();
   for (const lang of LANGS) {
-    for (const kind of ['ios', 'android']) await shoot(browser, lang, kind);
+    for (const kind of (process.env.KINDS || 'ios,android,ipad').split(',')) await shoot(browser, lang, kind);
     await featureGraphic(browser, lang);
   }
   await browser.close();
