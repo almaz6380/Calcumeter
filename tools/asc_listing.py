@@ -130,7 +130,7 @@ FREQUENCY = {'alcoholTobaccoOrDrugUseOrReferences', 'contests', 'gamblingSimulat
              'profanityOrCrudeHumor', 'sexualContentGraphicAndNudity', 'sexualContentOrNudity',
              'violenceCartoonOrFantasy', 'violenceRealistic', 'violenceRealisticProlongedGraphicOrSadistic'}
 YES_NO = {'gambling', 'unrestrictedWebAccess', 'lootBox', 'messagingAndChat', 'parentalControls', 'advertising',
-          'healthOrWellnessTopics', 'ageAssurance', 'userGeneratedContent'}
+          'healthOrWellnessTopics', 'ageAssurance', 'userGeneratedContent', 'socialMedia'}
 
 
 @step('Altersfreigabe (4+)')
