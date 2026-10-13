@@ -260,10 +260,10 @@ def review_details(asc, version_id, phone, email):
                  'relationships': {'appStoreVersion': rel('appStoreVersions', version_id)}}})
 
 
-@step('Veröffentlichung nach Freigabe automatisch')
+@step('Veröffentlichung nach Freigabe automatisch, Copyright')
 def release_type(asc, version_id):
     asc.patch(f'/v1/appStoreVersions/{version_id}', {'data': {'type': 'appStoreVersions', 'id': version_id,
-              'attributes': {'releaseType': 'AFTER_APPROVAL'}}})
+              'attributes': {'releaseType': 'AFTER_APPROVAL', 'copyright': '2026 Josef Gallab'}}})
 
 
 @step('In-App-Kauf: Prüf-Screenshot und Notiz')
