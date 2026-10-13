@@ -125,6 +125,12 @@ def info_localizations(asc, info_id):
         log(f'    {loc}: {d["name"]}')
 
 
+FREQUENCY = {'alcoholTobaccoOrDrugUseOrReferences', 'contests', 'gamblingSimulated', 'gunsOrOtherWeapons',
+             'horrorOrFearThemes', 'matureOrSuggestiveThemes', 'medicalOrTreatmentInformation',
+             'profanityOrCrudeHumor', 'sexualContentGraphicAndNudity', 'sexualContentOrNudity',
+             'violenceCartoonOrFantasy', 'violenceRealistic', 'violenceRealisticProlongedGraphicOrSadistic'}
+
+
 @step('Altersfreigabe (4+)')
 def age_rating(asc, info_id):
     decl = asc.get(f'/v1/appInfos/{info_id}/ageRatingDeclaration')['data']
@@ -133,10 +139,10 @@ def age_rating(asc, info_id):
         if k in ('kidsAgeBand', 'ageRatingOverride', 'ageRatingOverrideV2', 'koreaAgeRatingOverride',
                  'developerAgeRatingInfoUrl'):
             continue
-        if isinstance(v, bool) or k in ('gambling', 'unrestrictedWebAccess', 'lootBox', 'seventeenPlus'):
-            attrs[k] = k == 'advertising'   # Werbung: ja, alles andere: nein
-        else:
+        if isinstance(v, str) or k in FREQUENCY:
             attrs[k] = 'NONE'
+        else:   # Ja/Nein-Fragen, auch wenn noch leer (null)
+            attrs[k] = k == 'advertising'   # Werbung: ja, alles andere: nein
     asc.patch(f'/v1/ageRatingDeclarations/{decl["id"]}',
               {'data': {'type': 'ageRatingDeclarations', 'id': decl['id'], 'attributes': attrs}})
 
