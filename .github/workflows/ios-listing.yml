@@ -1,0 +1,48 @@
+# App-Store-Eintrag (Texte, Screenshots, Preis, Länder, Build, Prüfangaben) per App Store Connect API füllen
+# und optional zur Prüfung einreichen. Start: Actions → „iOS Listing“ → Run workflow.
+name: iOS Listing
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Build-Nummer für die Version (leer = keine Änderung)
+        default: ''
+      phone:
+        description: Telefonnummer für die App-Prüfung (z. B. +43 660 1234567)
+        default: ''
+      submit:
+        description: Danach zur Prüfung einreichen
+        type: boolean
+        default: false
+      skip_shots:
+        description: Screenshots nicht neu hochladen
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
+jobs:
+  listing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'pyjwt[crypto]' requests
+      - name: Eintrag füllen
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          REVIEW_PHONE: ${{ inputs.phone }}
+        run: |
+          ARGS=()
+          [ -n "${{ inputs.build }}" ] && ARGS+=(--build "${{ inputs.build }}")
+          [ "${{ inputs.submit }}" = "true" ] && ARGS+=(--submit)
+          [ "${{ inputs.skip_shots }}" = "true" ] && ARGS+=(--skip-shots)
+          python3 tools/asc_listing.py "${ARGS[@]}"
