@@ -27,8 +27,14 @@ jobs:
           node-version: 22
           cache: npm
 
+      # Apple verlangt das aktuelle iOS-SDK (ab 2026: Xcode 26) – neuestes stabiles Xcode des Runners nehmen
       - name: Xcode wählen
-        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
+        run: |
+          ls -d /Applications/Xcode*.app
+          XC=$(ls -d /Applications/Xcode_[0-9]*.app | grep -viE 'beta|rc' | sort -V | tail -1)
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+          xcodebuild -version | head -1 | awk '{ split($2, v, "."); if (v[1] < 26) { print "Xcode 26 oder neuer nötig"; exit 1 } }'
 
       - name: Web-App bauen und in iOS kopieren
         run: |
