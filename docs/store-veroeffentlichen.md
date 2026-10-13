@@ -78,7 +78,7 @@ Einmalig:
    (Name „GitHub Calcumeter“, Zugriff **App-Manager**) → `.p8` laden, Schlüssel-ID notieren.
 2. Team-ID: developer.apple.com → Konto → Mitgliedschaftsdetails (10 Zeichen).
 3. GitHub → Repo → Settings → Secrets and variables → Actions → **New repository secret**:
-   `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (kompletter Inhalt der .p8), `APPLE_TEAM_ID`.
+   `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (kompletter Inhalt der .p8). Die Team-ID JU8STVD4SJ steht schon im Projekt.
 
 Jede Version: GitHub → **Actions → iOS Release → Run workflow**. Nach etwa 20 Minuten ist der Build in
 App Store Connect (TestFlight), dort auswählen und einreichen. Die Build-Nummer zählt automatisch hoch,
