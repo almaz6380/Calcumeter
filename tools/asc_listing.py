@@ -251,6 +251,25 @@ def attach_build(asc, app_id, version_id, number):
     asc.patch(f'/v1/appStoreVersions/{version_id}/relationships/build', rel('builds', builds[0]['id']))
 
 
+@step('Bereitschaft prüfen (Build, Screenshots)')
+def check_ready(asc, version_id, loc_ids):
+    try:
+        b = asc.get(f'/v1/appStoreVersions/{version_id}/build')['data']
+        a = b['attributes'] if b else {}
+        log(f'    Build {a.get("version")}: {a.get("processingState")}, Verschlüsselung {a.get("usesNonExemptEncryption")}')
+    except RuntimeError as e:
+        log(f'    Build: {e}')
+    states = {}
+    for code, lid in (loc_ids or {}).items():
+        for s in asc.get(f'/v1/appStoreVersionLocalizations/{lid}/appScreenshotSets', limit=50)['data']:
+            for shot in asc.get(f'/v1/appScreenshotSets/{s["id"]}/appScreenshots', limit=50)['data']:
+                st = ((shot['attributes'].get('assetDeliveryState') or {}).get('state')) or '?'
+                states[st] = states.get(st, 0) + 1
+                if st != 'COMPLETE':
+                    log(f'    {code} {s["attributes"]["screenshotDisplayType"]}: {st} {shot["attributes"].get("fileName")}')
+    log(f'    Screenshots: {states}')
+
+
 @step('Prüfangaben (Kontakt, Notiz)')
 def review_details(asc, version_id, phone, email):
     attrs = {'contactFirstName': 'Josef', 'contactLastName': 'Gallab', 'contactPhone': phone, 'contactEmail': email,
@@ -380,6 +399,8 @@ def main():
         log('▶ Prüfangaben übersprungen (keine Telefonnummer)')
     release_type(asc, version_id)
     iap_id = iap(asc, app_id)
+    if a.submit:
+        check_ready(asc, version_id, loc_ids)
     if a.submit and not FAILED:
         submit(asc, app_id, version_id, iap_id)
 
