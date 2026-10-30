@@ -49,7 +49,14 @@ class ASC:
         return {'Authorization': f'Bearer {self.token}'}
 
     def call(self, method, path, body=None, ok=(200, 201, 204), params=None):
-        r = self.s.request(method, API + path, headers=self._auth(), json=body, params=params, timeout=60)
+        for attempt in range(3):   # Apple antwortet gelegentlich nicht rechtzeitig
+            try:
+                r = self.s.request(method, API + path, headers=self._auth(), json=body, params=params, timeout=90)
+                break
+            except requests.exceptions.RequestException:
+                if attempt == 2:
+                    raise
+                time.sleep(5)
         if r.status_code not in ok:
             raise RuntimeError(f'{method} {path} → {r.status_code}: {r.text[:1500]}')
         return r.json() if r.content else {}
