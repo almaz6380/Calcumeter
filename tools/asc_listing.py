@@ -347,6 +347,13 @@ def submit(asc, app_id, version_id, iap_id):
         items = asc.get(f'/v1/reviewSubmissions/{sub["id"]}/items', include='appStoreVersion')['data']
         has_version = any((it.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == version_id
                           for it in items)
+        # Abgelehnte Einträge als erledigt markieren, wie „Erneut zur Prüfung einreichen“ im Browser
+        for it in items:
+            st = it['attributes'].get('state')
+            log(f'    Eintrag {it["id"]}: {st}')
+            if st in ('REJECTED', 'UNRESOLVED_ISSUES'):
+                asc.patch(f'/v1/reviewSubmissionItems/{it["id"]}', {'data': {
+                    'type': 'reviewSubmissionItems', 'id': it['id'], 'attributes': {'resolved': True}}})
     else:
         sub = asc.post('/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
                        'relationships': {'app': rel('apps', app_id)}}})['data']
