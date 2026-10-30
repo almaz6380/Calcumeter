@@ -287,7 +287,12 @@ def iap(asc, app_id):
     except RuntimeError:
         old = None
     if old:
-        asc.delete(f'/v1/inAppPurchaseAppStoreReviewScreenshots/{old["id"]}')
+        # Apple sperrt den Prüf-Screenshot, sobald der Kauf einmal eingereicht war; dann bleibt er stehen
+        try:
+            asc.delete(f'/v1/inAppPurchaseAppStoreReviewScreenshots/{old["id"]}')
+        except RuntimeError:
+            log('    Prüf-Screenshot gesperrt, bleibt unverändert')
+            return iap_id
     upload(asc, 'inAppPurchaseAppStoreReviewScreenshots', 'inAppPurchaseV2', 'inAppPurchases', iap_id,
            ROOT / 'store' / 'iap-review.png')
     return iap_id
