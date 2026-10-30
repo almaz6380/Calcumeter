@@ -230,4 +230,14 @@
   'Atmosphäre': 'Atmosfer',
   'Pfund pro Quadratzoll': 'İnç kare başına libre (psi)',
   'Millimeter Quecksilber': 'Milimetre cıva',
+  // Rechenblatt
+  'Rechenblatt': 'Not defteri',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Not defterindeki gibi hesapla, değişkenler ve toplamlarla',
+  'Blatt leeren': 'Not defterini temizle',
+  'Zum Leeren nochmal tippen': 'Temizlemek için tekrar dokunun',
+  'Antippen zum Kopieren': 'Kopyalamak için dokunun',
+  'summe': 'toplam',
+  'in': '→',
+  'von': 'of',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Alışveriş\nEkmek: 3,20 €\nPeynir: 6,90 €\ntoplam\n\nmesafe = 42 km\nmesafe → mi\nmesafe × 0,30 €\n100 € → USD\n80 × 15 %',
 });

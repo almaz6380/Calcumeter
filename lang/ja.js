@@ -230,4 +230,14 @@
   'Atmosphäre': '気圧',
   'Pfund pro Quadratzoll': 'ポンド毎平方インチ',
   'Millimeter Quecksilber': '水銀柱ミリメートル',
+  // Rechenblatt
+  'Rechenblatt': 'メモ計算',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'メモのように計算。変数と合計に対応',
+  'Blatt leeren': 'メモを消去',
+  'Zum Leeren nochmal tippen': 'もう一度タップで消去',
+  'Antippen zum Kopieren': 'タップでコピー',
+  'summe': '合計',
+  'in': '→',
+  'von': 'の',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# 買い物\nパン: 320 ¥\nチーズ: 690 ¥\n合計\n\n距離 = 42 km\n距離 → mi\n距離 × 30 ¥\n1000 ¥ → USD\n80 × 15 %',
 });

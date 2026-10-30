@@ -230,4 +230,14 @@
   'Atmosphäre': '大氣壓',
   'Pfund pro Quadratzoll': '磅/平方英吋',
   'Millimeter Quecksilber': '毫米汞柱',
+  // Rechenblatt
+  'Rechenblatt': '計算筆記',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': '像在筆記本上一樣計算，支援變數和合計',
+  'Blatt leeren': '清空筆記',
+  'Zum Leeren nochmal tippen': '再點一次即可清空',
+  'Antippen zum Kopieren': '點按複製',
+  'summe': '合計',
+  'in': '→',
+  'von': '的',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# 購物\n麵包: 40 TWD\n起司: 120 TWD\n合計\n\n距離 = 42 km\n距離 → mi\n距離 × 10 TWD\n1000 TWD → USD\n80 × 15 %',
 });

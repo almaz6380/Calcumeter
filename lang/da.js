@@ -230,4 +230,14 @@
   'Atmosphäre': 'Atmosfære',
   'Pfund pro Quadratzoll': 'Pund pr. kvadrattomme',
   'Millimeter Quecksilber': 'Millimeter kviksølv',
+  // Rechenblatt
+  'Rechenblatt': 'Notesblok',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Regn som på en notesblok, med variabler og summer',
+  'Blatt leeren': 'Ryd notesblok',
+  'Zum Leeren nochmal tippen': 'Tryk igen for at rydde',
+  'Antippen zum Kopieren': 'Tryk for at kopiere',
+  'summe': 'sum',
+  'in': 'til',
+  'von': 'af',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Indkøb\nBrød: 3,20 €\nOst: 6,90 €\nsum\n\nafstand = 42 km\nafstand til mi\nafstand × 0,30 €\n100 € til USD\n15 % af 80',
 });

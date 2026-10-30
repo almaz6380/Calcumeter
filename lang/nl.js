@@ -230,4 +230,14 @@
   'Atmosphäre': 'Atmosfeer',
   'Pfund pro Quadratzoll': 'Pound per vierkante inch (psi)',
   'Millimeter Quecksilber': 'Millimeter kwik',
+  // Rechenblatt
+  'Rechenblatt': 'Kladblok',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Reken zoals op een kladblok, met variabelen en totalen',
+  'Blatt leeren': 'Kladblok wissen',
+  'Zum Leeren nochmal tippen': 'Tik nogmaals om te wissen',
+  'Antippen zum Kopieren': 'Tik om te kopiëren',
+  'summe': 'som',
+  'in': 'naar',
+  'von': 'van',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Boodschappen\nBrood: 3,20 €\nKaas: 6,90 €\nsom\n\nafstand = 42 km\nafstand naar mi\nafstand × 0,30 €\n100 € naar USD\n15 % van 80',
 });

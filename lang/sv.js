@@ -230,4 +230,14 @@
   'Atmosphäre': 'Atmosfär',
   'Pfund pro Quadratzoll': 'Pund per kvadrattum',
   'Millimeter Quecksilber': 'Millimeter kvicksilver',
+  // Rechenblatt
+  'Rechenblatt': 'Anteckningar',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Räkna som på ett anteckningsblock, med variabler och summor',
+  'Blatt leeren': 'Rensa anteckningar',
+  'Zum Leeren nochmal tippen': 'Tryck igen för att rensa',
+  'Antippen zum Kopieren': 'Tryck för att kopiera',
+  'summe': 'summa',
+  'in': 'till',
+  'von': 'av',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Handla\nBröd: 3,20 €\nOst: 6,90 €\nsumma\n\navstånd = 42 km\navstånd till mi\navstånd × 0,30 €\n100 € till USD\n15 % av 80',
 });

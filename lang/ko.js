@@ -230,4 +230,14 @@
   'Atmosphäre': '기압',
   'Pfund pro Quadratzoll': '제곱인치당 파운드',
   'Millimeter Quecksilber': '수은주 밀리미터',
+  // Rechenblatt
+  'Rechenblatt': '메모 계산',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': '메모처럼 계산하세요. 변수와 합계 지원',
+  'Blatt leeren': '메모 지우기',
+  'Zum Leeren nochmal tippen': '다시 탭하면 지워집니다',
+  'Antippen zum Kopieren': '탭하여 복사',
+  'summe': '합계',
+  'in': '→',
+  'von': '의',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# 장보기\n빵: 3200 ₩\n치즈: 6900 ₩\n합계\n\n거리 = 42 km\n거리 → mi\n거리 × 300 ₩\n10000 ₩ → USD\n80 × 15 %',
 });

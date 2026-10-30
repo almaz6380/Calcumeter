@@ -6,7 +6,7 @@
 
   const STORAGE_KEY = 'calcumeter.state';
   const SETTINGS_KEY = 'calcumeter.settings';
-  const VIEWS = { calc: 'Rechner', fx: 'Währung', units: 'Einheiten', graph: 'Graph', prog: 'Programmierer' };
+  const VIEWS = { calc: 'Rechner', fx: 'Währung', units: 'Einheiten', graph: 'Graph', notes: 'Rechenblatt', prog: 'Programmierer' };
   const HISTORY_LIMIT = 100;
 
   const state = {
@@ -300,7 +300,7 @@
     state.view = view;
     for (const v of Object.keys(VIEWS)) $(`#view-${v}`).hidden = v !== view;
     els.calcActions.hidden = view !== 'calc';
-    $('#share-btn').hidden = !['calc', 'fx', 'units'].includes(view);
+    $('#share-btn').hidden = !['calc', 'fx', 'units', 'notes'].includes(view);
     els.fxActions.hidden = view !== 'fx';
     els.viewSwitchLabel.textContent = t(VIEWS[view]);
     els.calculator.dataset.view = view;
@@ -644,7 +644,7 @@
   };
 
   const modules = {};
-  const mods = { fx: window.Fx, units: window.Units, prog: window.Prog, graph: window.Graph };
+  const mods = { fx: window.Fx, units: window.Units, prog: window.Prog, graph: window.Graph, notes: window.Notes };
   for (const [name, mod] of Object.entries(mods)) {
     if (!mod) continue;
     try {

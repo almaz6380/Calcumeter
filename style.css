@@ -1153,10 +1153,93 @@ select:focus-visible + *,
 .key.span3 { grid-column: span 3; }
 .key.span2 { grid-column: span 2; }
 
+/* ---------- Rechenblatt ---------- */
+
+.view-notes { gap: 10px; --nl: 30px; }
+
+.notes-paper {
+  position: relative;
+  flex: 1;
+  min-height: 160px;
+  overflow: auto;
+  border-radius: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  -webkit-overflow-scrolling: touch;
+}
+
+.notes-paper:focus-within { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+
+/* Linien wie auf einem Block, im Takt der Zeilenhöhe */
+.notes-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 100%;
+  padding-block: 12px;
+  background-image: linear-gradient(to bottom, transparent calc(var(--nl) - 1px), var(--line) calc(var(--nl) - 1px));
+  background-size: 100% var(--nl);
+  background-origin: content-box;
+  background-clip: content-box;
+}
+
+.notes-input {
+  display: block;
+  width: 100%;
+  min-height: calc(var(--nl) * 6);
+  margin: 0;
+  padding: 0 8px 0 16px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: 400 16px/var(--nl) var(--mono);
+  white-space: pre;
+  overflow: hidden;
+  resize: none;
+  caret-color: var(--accent);
+}
+
+.notes-input:focus { outline: none; }
+.notes-input::placeholder { color: var(--muted); opacity: .75; }
+
+.notes-results {
+  display: flex;
+  flex-direction: column;
+  max-width: 48vw;
+  padding-right: 8px;
+}
+
+.notes-res {
+  height: var(--nl);
+  flex-shrink: 0;
+}
+
+button.notes-res {
+  max-width: 100%;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: none;
+  color: var(--accent);
+  font: 500 15px/var(--nl) var(--mono);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: copy;
+}
+
+button.notes-res:hover { background: var(--raise); }
+button.notes-res.total { color: var(--text); font-weight: 700; }
+
+.notes-tools { display: flex; align-items: center; gap: 8px; }
+.notes-bar { flex: 1; min-width: 0; }
+.notes-bar button { font-family: var(--mono); }
+.notes-clear { flex-shrink: 0; }
+
 /* Breite je Bereich */
 .calculator[data-view="fx"], .calculator[data-view="units"] { --maxw: 520px; }
 .calculator[data-view="prog"] { --maxw: 640px; }
 .calculator[data-view="graph"] { --maxw: 1200px; }
+.calculator[data-view="notes"] { --maxw: 760px; }
 
 /* Schmal: Winkelmaß nur über die Anzeige (DEG/RAD antippen), damit die Kopfzeile passt */
 @media (max-width: 560px) {

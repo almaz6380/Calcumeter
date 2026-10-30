@@ -12,7 +12,7 @@
   const isApp = Boolean(cap && cap.isNativePlatform && cap.isNativePlatform());
   const P = isApp ? cap.Plugins : {};
   const platform = cap && cap.getPlatform ? cap.getPlatform() : 'web';
-  const VIEWS = ['calc', 'fx', 'units', 'graph', 'prog'];
+  const VIEWS = ['calc', 'fx', 'units', 'graph', 'notes', 'prog'];
 
   // Teilen; liefert 'shared', 'copied', 'cancelled' oder 'failed'
   async function share({ text, url }) {

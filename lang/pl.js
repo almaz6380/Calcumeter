@@ -230,4 +230,14 @@
   'Atmosphäre': 'Atmosfera',
   'Pfund pro Quadratzoll': 'Funt na cal kwadratowy (psi)',
   'Millimeter Quecksilber': 'Milimetr słupa rtęci',
+  // Rechenblatt
+  'Rechenblatt': 'Notatnik',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Licz jak w notatniku, ze zmiennymi i sumami',
+  'Blatt leeren': 'Wyczyść notatnik',
+  'Zum Leeren nochmal tippen': 'Stuknij ponownie, aby wyczyścić',
+  'Antippen zum Kopieren': 'Stuknij, aby skopiować',
+  'summe': 'suma',
+  'in': 'na',
+  'von': 'z',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Zakupy\nChleb: 3,20 €\nSer: 6,90 €\nsuma\n\nodległość = 42 km\nodległość na mi\nodległość × 0,30 €\n100 € na USD\n15 % z 80',
 });
