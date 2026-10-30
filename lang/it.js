@@ -230,4 +230,14 @@
   'Atmosphäre': 'Atmosfera',
   'Pfund pro Quadratzoll': 'Libbra per pollice quadrato',
   'Millimeter Quecksilber': 'Millimetro di mercurio',
+  // Rechenblatt
+  'Rechenblatt': 'Blocco note',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Calcola come su un blocco note, con variabili e somme',
+  'Blatt leeren': 'Svuota blocco',
+  'Zum Leeren nochmal tippen': 'Tocca di nuovo per svuotare',
+  'Antippen zum Kopieren': 'Tocca per copiare',
+  'summe': 'somma',
+  'in': 'in',
+  'von': 'di',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Spesa\nPane: 3,20 €\nFormaggio: 6,90 €\nsomma\n\ndistanza = 42 km\ndistanza in mi\ndistanza × 0,30 €\n100 € in USD\n15 % di 80',
 });

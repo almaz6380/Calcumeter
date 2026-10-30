@@ -349,5 +349,5 @@
     };
   }
 
-  return { CATEGORIES, EN, convertUnit, formatValue, init };
+  return { CATEGORIES, EN, convertUnit, formatValue, unitSym, init };
 });

@@ -157,6 +157,16 @@
     // Teilen
     'berechnet mit Calcumeter': 'calculated with Calcumeter',
     'Kurs vom {date}': 'rate of {date}',
+    // Rechenblatt
+    'Rechenblatt': 'Notepad',
+    'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': 'Calculate like on a notepad, with variables and totals',
+    'Blatt leeren': 'Clear notepad',
+    'Zum Leeren nochmal tippen': 'Tap again to clear',
+    'Antippen zum Kopieren': 'Tap to copy',
+    'summe': 'sum',
+    'in': 'in',
+    'von': 'of',
+    '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# Groceries\nBread: 3.20 €\nCheese: 6.90 €\nsum\n\ndistance = 42 km\ndistance in mi\ndistance × 0.30 €\n100 € in USD\n15 % of 80',
   };
 
   // Meldungen mit variablem Teil: das deutsche Präfix wird übersetzt, der Rest bleibt

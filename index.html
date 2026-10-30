@@ -291,6 +291,34 @@
         </div>
       </section>
 
+      <section class="view view-notes" id="view-notes" role="region" aria-label="Rechenblatt" hidden>
+        <div class="notes-paper" id="notes-scroll">
+          <div class="notes-grid">
+            <textarea class="notes-input" id="notes-input" wrap="off" rows="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Rechenblatt"></textarea>
+            <div class="notes-results" id="notes-results" aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="notes-tools">
+          <div class="graph-bar notes-bar" id="notes-bar" role="group" aria-label="Schnelleingabe">
+            <button type="button" data-nins="+">+</button>
+            <button type="button" data-nins="−">−</button>
+            <button type="button" data-nins="×">×</button>
+            <button type="button" data-nins="÷">÷</button>
+            <button type="button" data-nins=" = ">=</button>
+            <button type="button" data-nins="(">(</button>
+            <button type="button" data-nins=")">)</button>
+            <button type="button" data-nins="of">%</button>
+            <button type="button" data-nins=" €">€</button>
+            <button type="button" data-nins=" USD">$</button>
+            <button type="button" data-nins="into" data-no-i18n>in</button>
+            <button type="button" data-nins="sum" data-no-i18n>summe</button>
+          </div>
+          <button type="button" class="icon-btn notes-clear" id="notes-clear" aria-label="Blatt leeren" title="Blatt leeren">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          </button>
+        </div>
+      </section>
+
       <section class="view view-prog" id="view-prog" role="region" aria-label="Programmierer" hidden>
         <div class="prog-display" id="prog-display">
           <div class="prog-controls">
@@ -374,6 +402,9 @@
         <button type="button" class="view-item" data-view="graph">
           <span class="vi-icon" aria-hidden="true">ƒ</span><span class="vi-text"><strong>Graph</strong><small>Funktionen zeichnen und Werte ablesen</small></span>
         </button>
+        <button type="button" class="view-item" data-view="notes">
+          <span class="vi-icon" aria-hidden="true">✎</span><span class="vi-text"><strong>Rechenblatt</strong><small>Rechnen wie auf einem Notizzettel, mit Variablen und Summen</small></span>
+        </button>
         <button type="button" class="view-item" data-view="prog">
           <span class="vi-icon mono" aria-hidden="true">0x</span><span class="vi-text"><strong>Programmierer</strong><small>HEX, DEC, OCT, BIN und Bitoperationen</small></span>
         </button>
@@ -438,6 +469,7 @@
   <script src="units.js"></script>
   <script src="programmer.js"></script>
   <script src="graph.js"></script>
+  <script src="notes.js"></script>
   <script src="money.js"></script>
   <script src="app.js"></script>
 </body>

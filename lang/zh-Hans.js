@@ -230,4 +230,14 @@
   'Atmosphäre': '标准大气压',
   'Pfund pro Quadratzoll': '磅/平方英寸',
   'Millimeter Quecksilber': '毫米汞柱',
+  // Rechenblatt
+  'Rechenblatt': '计算笔记',
+  'Rechnen wie auf einem Notizzettel, mit Variablen und Summen': '像在笔记本上一样计算，支持变量和合计',
+  'Blatt leeren': '清空笔记',
+  'Zum Leeren nochmal tippen': '再点一次即可清空',
+  'Antippen zum Kopieren': '点按复制',
+  'summe': '合计',
+  'in': '→',
+  'von': '的',
+  '# Einkauf\nBrot: 3,20 €\nKäse: 6,90 €\nsumme\n\nstrecke = 42 km\nstrecke in mi\nstrecke × 0,30 €\n100 € in USD\n15 % von 80': '# 购物\n面包: 12 CNY\n奶酪: 35 CNY\n合计\n\n距离 = 42 km\n距离 → mi\n距离 × 2 CNY\n100 CNY → USD\n80 × 15 %',
 });

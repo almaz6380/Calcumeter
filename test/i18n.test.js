@@ -32,7 +32,7 @@ test('Jeder Text der Seite hat eine englische Übersetzung', () => {
 
 test('Jeder t()-Text in den Skripten hat eine englische Übersetzung', () => {
   const missing = [];
-  for (const f of ['app.js', 'currency.js', 'units.js', 'programmer.js', 'graph.js', 'keypad.js']) {
+  for (const f of ['app.js', 'currency.js', 'units.js', 'programmer.js', 'graph.js', 'keypad.js', 'notes.js']) {
     for (const m of read(f).matchAll(/\bt\('((?:[^'\\]|\\.)+)'/g)) {
       if (!(m[1] in I18n.EN)) missing.push(`${f}: ${m[1]}`);
     }
