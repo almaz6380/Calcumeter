@@ -79,6 +79,14 @@ async function shoot(browser, lang, kind) {
   await snap(4);
   await go('graph');
   await snap(5);
+  await go('notes');
+  await page.evaluate(() => {
+    const input = document.getElementById('notes-input');
+    input.value = I18n.t(Object.keys(I18n.EN).find((k) => k.startsWith('# Einkauf')));
+    input.dispatchEvent(new Event('input'));
+    input.blur();
+  });
+  await snap(6);
   await go('calc');
   await ctx.close();
 }
