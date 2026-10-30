@@ -266,12 +266,20 @@ def release_type(asc, version_id):
               'attributes': {'releaseType': 'AFTER_APPROVAL', 'copyright': '2026 Josef Gallab'}}})
 
 
+# Nur in diesen Zuständen lässt Apple Notiz und Prüf-Screenshot ändern
+EDITABLE_IAP = ('READY_TO_SUBMIT', 'MISSING_METADATA', 'DEVELOPER_ACTION_NEEDED', 'REJECTED')
+
+
 @step('In-App-Kauf: Prüf-Screenshot und Notiz')
 def iap(asc, app_id):
     items = asc.get(f'/v1/apps/{app_id}/inAppPurchasesV2', **{'filter[productId]': 'no_ads'})['data']
     if not items:
         raise RuntimeError('In-App-Kauf no_ads nicht gefunden')
     iap_id = items[0]['id']
+    state = items[0]['attributes'].get('state')
+    if state not in EDITABLE_IAP:
+        log(f'    Status {state}: unverändert gelassen')
+        return iap_id
     asc.patch(f'/v2/inAppPurchases/{iap_id}', {'data': {'type': 'inAppPurchases', 'id': iap_id,
               'attributes': {'reviewNote': REVIEW_NOTES}}})
     try:
@@ -288,18 +296,37 @@ def iap(asc, app_id):
 @step('Zur Prüfung einreichen')
 def submit(asc, app_id, version_id, iap_id):
     if iap_id:
-        try:
-            asc.post('/v1/inAppPurchaseSubmissions', {'data': {'type': 'inAppPurchaseSubmissions',
-                     'relationships': {'inAppPurchaseV2': rel('inAppPurchases', iap_id)}}})
-            log('    In-App-Kauf für die Prüfung vorgemerkt')
-        except RuntimeError as e:
-            log(f'    Hinweis In-App-Kauf: {e}')
-    sub = asc.post('/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
-                   'relationships': {'app': rel('apps', app_id)}}})['data']
-    asc.post('/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
-        'reviewSubmission': rel('reviewSubmissions', sub['id']), 'appStoreVersion': rel('appStoreVersions', version_id)}}})
+        state = asc.get(f'/v2/inAppPurchases/{iap_id}')['data']['attributes'].get('state')
+        if state == 'READY_TO_SUBMIT':
+            try:
+                asc.post('/v1/inAppPurchaseSubmissions', {'data': {'type': 'inAppPurchaseSubmissions',
+                         'relationships': {'inAppPurchaseV2': rel('inAppPurchases', iap_id)}}})
+                log('    In-App-Kauf für die Prüfung vorgemerkt')
+            except RuntimeError as e:
+                log(f'    Hinweis In-App-Kauf: {e}')
+        else:
+            log(f'    In-App-Kauf: {state}')
+
+    # Nach einer Ablehnung bleibt die alte Einreichung offen (UNRESOLVED_ISSUES) und wird erneut abgeschickt
+    open_subs = asc.get('/v1/reviewSubmissions', **{'filter[app]': app_id, 'filter[platform]': 'IOS',
+                        'filter[state]': 'READY_FOR_REVIEW,UNRESOLVED_ISSUES'})['data']
+    if open_subs:
+        sub = open_subs[0]
+        log(f'    offene Einreichung {sub["id"]} ({sub["attributes"].get("state")})')
+        items = asc.get(f'/v1/reviewSubmissions/{sub["id"]}/items', include='appStoreVersion')['data']
+        has_version = any((it.get('relationships', {}).get('appStoreVersion', {}).get('data') or {}).get('id') == version_id
+                          for it in items)
+    else:
+        sub = asc.post('/v1/reviewSubmissions', {'data': {'type': 'reviewSubmissions', 'attributes': {'platform': 'IOS'},
+                       'relationships': {'app': rel('apps', app_id)}}})['data']
+        has_version = False
+    if not has_version:
+        asc.post('/v1/reviewSubmissionItems', {'data': {'type': 'reviewSubmissionItems', 'relationships': {
+            'reviewSubmission': rel('reviewSubmissions', sub['id']), 'appStoreVersion': rel('appStoreVersions', version_id)}}})
     asc.patch(f'/v1/reviewSubmissions/{sub["id"]}', {'data': {'type': 'reviewSubmissions', 'id': sub['id'],
               'attributes': {'submitted': True}}})
+    state = asc.get(f'/v1/appStoreVersions/{version_id}')['data']['attributes']['appStoreState']
+    log(f'    Version jetzt: {state}')
 
 
 def main():
