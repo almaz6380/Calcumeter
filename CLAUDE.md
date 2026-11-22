@@ -22,8 +22,9 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 - Widget/shortcut texts for Android and iOS: edit `tools/native-strings.json`, then `python3 tools/native-strings.py`
   (writes `res/values-*/widget_strings.xml`, the `L10n` tables in the Swift files and `CFBundleLocalizations`).
 - `native.js` – bridge to Capacitor (share, haptics, deep links `calcumeter://view/<view>` and `#<view>`,
-  `widgetData`). `money.js` – AdMob banner (not in the calculator view) + rewarded video (24 h ad-free) +
-  RevenueCat `no_ads`; test ids until release. Both do nothing on the web.
+  `widgetData`). `money.js` – AdMob banner at the bottom of every view (calculator too since 11/2026, except phone landscape;
+  space is reserved via `--ad-h`, class `has-banner` on `<html>`) + rewarded video (24 h ad-free) +
+  RevenueCat `no_ads`; real ad unit ids are live (`adsTesting: false`). Both do nothing on the web.
 - `privacy.html`, `imprint.html` + `assets/legal/` (de/en). `assets/fonts/` – Geist, served locally.
 - `sw.js` – **bump `CACHE` (`calcumeter-vNN`) on every web release** and list new files in `ASSETS`.
 - Store app: `package.json`, `capacitor.config.json` (`com.almaz6380.calcumeter`), `android/`, `ios/` (checked in;
@@ -64,4 +65,7 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 
 ## Owner preferences
 - Design matters: check visual changes with screenshots on phone portrait/landscape and desktop before shipping.
-- No ads in the calculator itself and no full-screen ads.
+- No full-screen ads. Since 22.11.2026 the owner wants the banner in the calculator view as well – it must never
+  cover keys and keeps a gap to the bottom key row (accidental taps on ads endanger the AdMob account).
+- iOS asks for tracking permission natively in `SceneDelegate.swift` (the plugin bridge does not show the dialog
+  reliably); `money.js` only waits for the answer.

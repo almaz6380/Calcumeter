@@ -108,7 +108,8 @@ Mit eigenem Mac geht es weiterhin klassisch: `npm run ios` → Xcode → Product
 
 Checkliste:
 - [ ] Einwilligungsdialog beim ersten Start (EU), auf dem iPhone danach die Tracking-Frage
-- [ ] Banner erscheint in Währung/Einheiten/Graph/Programmierer, **nicht** im Rechner, und verdeckt keine Tasten
+- [ ] Banner erscheint unten in allen Bereichen, auch im Rechner (dort nicht im Handy-Querformat), verdeckt keine Tasten
+  und hat sichtbaren Abstand zur untersten Tastenreihe
 - [ ] Menü → „24 Stunden werbefrei“ zeigt ein Video, danach ist das Banner weg
 - [ ] „Werbefrei kaufen“ und „Käufe wiederherstellen“ funktionieren (Sandbox / Lizenztester)
 - [ ] Wechselkurs-Widget zeigt deine Favoriten (in der App einmal den Währungsrechner öffnen), Tippen öffnet Währung
