@@ -19,6 +19,13 @@ on:
         description: Screenshots nicht neu hochladen
         type: boolean
         default: false
+      status:
+        description: Nur den Stand lesen (Versionen, Builds, Einreichungen) – ändert nichts
+        type: boolean
+        default: false
+      new_version:
+        description: Neue Version anlegen, falls keine bearbeitbare da ist (z. B. 1.1)
+        default: ''
 
 defaults:
   run:
@@ -45,4 +52,6 @@ jobs:
           [ -n "${{ inputs.build }}" ] && ARGS+=(--build "${{ inputs.build }}")
           [ "${{ inputs.submit }}" = "true" ] && ARGS+=(--submit)
           [ "${{ inputs.skip_shots }}" = "true" ] && ARGS+=(--skip-shots)
+          [ "${{ inputs.status }}" = "true" ] && ARGS+=(--status)
+          [ -n "${{ inputs.new_version }}" ] && ARGS+=(--new-version "${{ inputs.new_version }}")
           python3 tools/asc_listing.py "${ARGS[@]}"

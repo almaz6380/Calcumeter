@@ -374,6 +374,8 @@ def main():
     ap.add_argument('--email', default=os.environ.get('REVIEW_EMAIL', 'kontakt@wellbooked.at'))
     ap.add_argument('--submit', action='store_true')
     ap.add_argument('--skip-shots', action='store_true')
+    ap.add_argument('--status', action='store_true', help='nur lesen: Versionen, Builds, Einreichungen')
+    ap.add_argument('--new-version', default='', help='neue Version anlegen (z. B. 1.1), falls keine bearbeitbare da ist')
     a = ap.parse_args()
 
     asc = ASC()
@@ -384,8 +386,32 @@ def main():
     info = next((i for i in infos if i['attributes'].get('appStoreState') not in ('READY_FOR_SALE', 'REPLACED_WITH_NEW_INFO')
                  and i['attributes'].get('state') not in ('READY_FOR_DISTRIBUTION',)), infos[0])
     versions = asc.get(f'/v1/apps/{app_id}/appStoreVersions', **{'filter[platform]': 'IOS', 'limit': 10})['data']
-    version = next(v for v in versions if v['attributes']['appStoreState'] in
-                   ('PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED'))
+    if a.status:
+        # Nur lesen – vor jedem Release ansehen, statt den Stand zu raten.
+        for v in versions:
+            log(f'  Version {v["attributes"]["versionString"]:8} {v["attributes"]["appStoreState"]}')
+        builds = asc.get('/v1/builds', **{'filter[app]': app_id, 'sort': '-uploadedDate', 'limit': 5})['data']
+        for b in builds:
+            log(f'  Build {b["attributes"]["version"]:5} {b["attributes"]["processingState"]}  {b["attributes"]["uploadedDate"]}')
+        subs = asc.get(f'/v1/apps/{app_id}/reviewSubmissions', limit=5)['data']
+        for r in subs:
+            log(f'  Einreichung {r["attributes"]["state"]}  {r["attributes"].get("submittedDate")}')
+        return
+    EDITABLE = ('PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED')
+    version = next((v for v in versions if v['attributes']['appStoreState'] in EDITABLE), None)
+    if version is None and a.new_version:
+        # Die letzte Version ist im Store oder in Prüfung: für ein Update braucht es eine neue.
+        version = asc.post('/v1/appStoreVersions', {'data': {
+            'type': 'appStoreVersions',
+            'attributes': {'platform': 'IOS', 'versionString': a.new_version, 'releaseType': 'AFTER_APPROVAL'},
+            'relationships': {'app': {'data': {'type': 'apps', 'id': app_id}}}}})['data']
+        log(f'Version {a.new_version} angelegt')
+    if version is None:
+        log('Keine bearbeitbare Version. Stand:')
+        for v in versions:
+            log(f'  {v["attributes"]["versionString"]} {v["attributes"]["appStoreState"]}')
+        log('Mit --new-version <Nummer> eine neue anlegen.')
+        sys.exit(1)
     version_id = version['id']
     log(f'Version {version["attributes"]["versionString"]} ({version["attributes"]["appStoreState"]})')
 
