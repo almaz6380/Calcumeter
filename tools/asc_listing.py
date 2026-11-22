@@ -409,6 +409,10 @@ def main():
             'attributes': {'platform': 'IOS', 'versionString': a.new_version, 'releaseType': 'AFTER_APPROVAL'},
             'relationships': {'app': {'data': {'type': 'apps', 'id': app_id}}}}})['data']
         log(f'Version {a.new_version} angelegt')
+        # Mit der neuen Version legt Apple ein neues, bearbeitbares appInfo an – das alte ist gesperrt.
+        infos = asc.get(f'/v1/apps/{app_id}/appInfos')['data']
+        info = next((i for i in infos if i['attributes'].get('appStoreState') not in ('READY_FOR_SALE', 'REPLACED_WITH_NEW_INFO')
+                     and i['attributes'].get('state') not in ('READY_FOR_DISTRIBUTION',)), infos[0])
     if version is None:
         log('Keine bearbeitbare Version. Stand:')
         for v in versions:
