@@ -48,9 +48,15 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
    Upload to Google Play with the service account JSON in `PLAY_SERVICE_ACCOUNT_JSON` (Android Publisher API v3:
    edits.insert → edits.bundles.upload → edits.tracks.update `production` with release notes → edits.commit).
    Package `com.almaz6380.calcumeter`; in-app product `no_ads`; RevenueCat keys are in `money.js`.
+   **Without a local SDK:** workflow `.github/workflows/android-release.yml` (builds, signs, optional upload via
+   `tools/play_release.py`; needs repo secrets `CALCUMETER_KEYSTORE_BASE64`, `CALCUMETER_KEYSTORE_PASSWORD`,
+   `PLAY_SERVICE_ACCOUNT_JSON`; `upload` defaults to false). Release notes come from `whatsNew` in `store/listing/*.json`.
 7. iOS release without a Mac: GitHub Actions workflow `.github/workflows/ios-release.yml` (macos-15, automatic cloud signing
    with an Admin-role App Store Connect API key from repo secrets `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8`, `APPLE_TEAM_ID`;
    exports with `destination=upload`). Trigger via the GitHub MCP (`actions_run_trigger`), read logs with `get_job_logs`.
+   iOS store entry: workflow `ios-listing.yml` (`tools/asc_listing.py`): `status` only reads; for an update pass
+   `new_version` (e.g. 1.1) + `build` + `submit`; `whatsNew` is sent for every version except 1.0. Bump
+   `MARKETING_VERSION` in the pbxproj first (build number = run number + 10).
    The widget target was added to the Xcode project by `tools/add-widget-target.rb` (bundle id
    `com.almaz6380.calcumeter.widgets`).
 

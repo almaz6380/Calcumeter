@@ -202,13 +202,16 @@ def availability(asc, app_id):
 
 
 @step('Version: Texte je Sprache')
-def version_localizations(asc, version_id):
+def version_localizations(asc, version_id, update=False):
     have = {l['attributes']['locale']: l['id'] for l in
             asc.get(f'/v1/appStoreVersions/{version_id}/appStoreVersionLocalizations', limit=50)['data']}
     for code, loc in LOCALES.items():
         d = listing(code)
         attrs = {'description': d['description'], 'keywords': d['keywords'], 'promotionalText': d['promotionalText'],
                  'supportUrl': SITE, 'marketingUrl': SITE}
+        if update:
+            # „Neu in dieser Version“ nimmt Apple erst ab dem ersten Update an.
+            attrs['whatsNew'] = d['whatsNew']
         if loc in have:
             asc.patch(f'/v1/appStoreVersionLocalizations/{have[loc]}',
                       {'data': {'type': 'appStoreVersionLocalizations', 'id': have[loc], 'attributes': attrs}})
@@ -421,7 +424,7 @@ def main():
     content_rights(asc, app_id)
     price(asc, app_id)
     availability(asc, app_id)
-    loc_ids = version_localizations(asc, version_id)
+    loc_ids = version_localizations(asc, version_id, update=version['attributes']['versionString'] != '1.0')
     if loc_ids and not a.skip_shots:
         screenshots(asc, loc_ids)
     if a.build:

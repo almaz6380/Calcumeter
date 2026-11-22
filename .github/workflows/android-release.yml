@@ -1,0 +1,100 @@
+# Android-App bauen, signieren und zu Google Play hochladen – ohne eigenen Rechner.
+# Start: GitHub → Actions → „Android Release“ → Run workflow.
+# Secrets: CALCUMETER_KEYSTORE_BASE64 (Upload-Keystore, base64), CALCUMETER_KEYSTORE_PASSWORD
+# (gilt für Keystore und Schlüssel, Alias „upload“), PLAY_SERVICE_ACCOUNT_JSON (Dienstkonto mit
+# Zugriff auf die App in der Play Console).
+# Vorher versionCode in android/app/build.gradle erhöhen – Play nimmt jede Nummer nur einmal.
+name: Android Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Zu Google Play hochladen (Produktion, an alle). Aus = nur bauen
+        type: boolean
+        default: false
+      dry_run:
+        description: Upload nur prüfen und wieder verwerfen
+        type: boolean
+        default: false
+
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Secrets vorhanden?
+        env:
+          KS: ${{ secrets.CALCUMETER_KEYSTORE_BASE64 }}
+          PW: ${{ secrets.CALCUMETER_KEYSTORE_PASSWORD }}
+          SA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          fehlt=0
+          [ -n "$KS" ] || { echo "::error::Secret CALCUMETER_KEYSTORE_BASE64 fehlt"; fehlt=1; }
+          [ -n "$PW" ] || { echo "::error::Secret CALCUMETER_KEYSTORE_PASSWORD fehlt"; fehlt=1; }
+          if [ "${{ inputs.upload }}" = "true" ] && [ -z "$SA" ]; then
+            echo "::error::Secret PLAY_SERVICE_ACCOUNT_JSON fehlt"; fehlt=1
+          fi
+          exit $fehlt
+
+      - name: Tests
+        run: |
+          npm ci
+          npm test
+
+      - name: Web-App bauen und in Android kopieren
+        run: |
+          npm run build
+          npx cap sync android
+          grep -E "versionCode|versionName" android/app/build.gradle
+
+      - name: AAB bauen und signieren
+        env:
+          KS: ${{ secrets.CALCUMETER_KEYSTORE_BASE64 }}
+          PW: ${{ secrets.CALCUMETER_KEYSTORE_PASSWORD }}
+        run: |
+          printf '%s' "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          cd android
+          ./gradlew bundleRelease --no-daemon -q \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/upload.jks" \
+            -Pandroid.injected.signing.store.password="$PW" \
+            -Pandroid.injected.signing.key.alias=upload \
+            -Pandroid.injected.signing.key.password="$PW"
+          ls -la app/build/outputs/bundle/release/
+
+      - name: AAB als Artefakt ablegen
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: Calcumeter-android
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 14
+
+      - name: Zu Google Play hochladen
+        if: inputs.upload
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          pip install -q 'pyjwt[crypto]' requests
+          python3 tools/play_release.py android/app/build/outputs/bundle/release/app-release.aab \
+            ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Schlüssel aufräumen
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks"
