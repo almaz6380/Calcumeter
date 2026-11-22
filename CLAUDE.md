@@ -86,4 +86,5 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 - **22.11.2026:** Banner in the calculator view, native tracking prompt. Web `calcumeter-v12` pushed to `gh-pages`.
   **iOS 1.1 (build 16) submitted**, `WAITING_FOR_REVIEW` (`ios-release` run 45038700938, `ios-listing` run 45039772476);
   1.0 (build 15) was live before. Android: banner shipped with 1.2 (vc6), see the entry above (before that Play served
-  1.1 / vc5). `android-release.yml` still stops at "Secrets vorhanden?" until the three repo secrets exist (see step 6).
+  1.1 / vc5). The three repo secrets for `android-release.yml` exist since 22.11.2026 (test run 45062174496 built and
+  signed the AAB, upload skipped).
