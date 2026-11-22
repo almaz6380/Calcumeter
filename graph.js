@@ -330,6 +330,37 @@
         resize();
       },
       redraw: () => { if (!el.view.hidden) redraw(); },
+      // Graph als PNG (für „Graph als Bild teilen“): Bild + Zeile mit den Funktionen darunter
+      bild() {
+        draw();
+        const css = getComputedStyle(document.documentElement);
+        const color = (name) => css.getPropertyValue(name).trim();
+        const dpr = el.canvas.width / Math.max(1, size.w);
+        const fns = state.fns.map((f, i) => ({ f: f.trim(), i })).filter((x) => x.f && compiled[x.i]);
+        const legend = Math.round((fns.length ? 22 * fns.length + 16 : 0) + 30);
+        const out = document.createElement('canvas');
+        out.width = el.canvas.width;
+        out.height = el.canvas.height + Math.round(legend * dpr);
+        const c = out.getContext('2d');
+        c.fillStyle = color('--panel');
+        c.fillRect(0, 0, out.width, out.height);
+        c.drawImage(el.canvas, 0, 0);
+        c.scale(dpr, dpr);
+        c.textBaseline = 'middle';
+        let y = size.h + 18;
+        c.font = '500 14px "Geist Mono", ui-monospace, monospace';
+        for (const { f, i } of fns) {
+          c.fillStyle = color(`--plot-${i + 1}`);
+          c.fillRect(12, y - 5, 10, 10);
+          c.fillStyle = color('--text');
+          c.fillText(`f${'₁₂₃'[i]}(x) = ${f}`, 30, y);
+          y += 22;
+        }
+        c.fillStyle = color('--muted');
+        c.font = '12px "Geist", ui-sans-serif, sans-serif';
+        c.fillText('Calcumeter', 12, size.h + legend - 14);
+        return new Promise((resolve, reject) => out.toBlob((b) => (b ? resolve(b) : reject(new Error('png'))), 'image/png'));
+      },
     };
   }
 

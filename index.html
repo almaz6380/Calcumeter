@@ -15,8 +15,9 @@
   <link rel="stylesheet" href="style.css">
   <script>
     try {
-      var t = JSON.parse(localStorage.getItem('calcumeter.settings') || '{}').theme;
-      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      var st = JSON.parse(localStorage.getItem('calcumeter.settings') || '{}');
+      if (st.theme === 'light' || st.theme === 'dark') document.documentElement.dataset.theme = st.theme;
+      if (st.palette === 'ocean' || st.palette === 'sunset') document.documentElement.dataset.palette = st.palette;
     } catch (e) {}
   </script>
 </head>
@@ -26,6 +27,7 @@
       <div class="history-head">
         <h2>Verlauf</h2>
         <div class="history-actions">
+          <button type="button" class="text-btn extra-btn" id="history-export" title="Verlauf exportieren">Exportieren<span class="lock-badge" aria-hidden="true"></span></button>
           <button type="button" class="text-btn" data-action="clear-history">Leeren</button>
           <button type="button" class="icon-btn history-close" data-action="toggle-history" aria-label="Verlauf schließen">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></svg>
@@ -282,6 +284,10 @@
           <canvas id="graph-canvas" aria-label="Graph der eingegebenen Funktionen" role="img"></canvas>
           <div class="graph-tip" id="graph-tip" hidden></div>
           <div class="graph-zoom">
+            <button type="button" class="icon-btn extra-btn" id="graph-share" aria-label="Graph als Bild teilen" title="Graph als Bild teilen">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+              <span class="lock-dot" aria-hidden="true"></span>
+            </button>
             <button type="button" class="icon-btn" data-gzoom="in" aria-label="Vergrößern">+</button>
             <button type="button" class="icon-btn" data-gzoom="out" aria-label="Verkleinern">−</button>
             <button type="button" class="icon-btn" data-gzoom="reset" aria-label="Ansicht zurücksetzen">
@@ -418,6 +424,14 @@
           <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">Dunkel</button>
         </div>
       </div>
+      <div class="setting setting-wrap">
+        <span id="set-palette-label">Farbe</span>
+        <div class="seg" role="radiogroup" aria-labelledby="set-palette-label">
+          <button type="button" role="radio" data-palette-choice="amber" aria-checked="true">Bernstein</button>
+          <button type="button" role="radio" class="extra-btn" data-palette-choice="ocean" aria-checked="false">Ozean<span class="lock-badge" aria-hidden="true"></span></button>
+          <button type="button" role="radio" class="extra-btn" data-palette-choice="sunset" aria-checked="false">Abendrot<span class="lock-badge" aria-hidden="true"></span></button>
+        </div>
+      </div>
       <div class="setting">
         <label for="set-lang" id="set-lang-label">Sprache</label>
         <span class="select"><select id="set-lang"><option value="auto">Auto</option></select></span>
@@ -436,7 +450,11 @@
           <span class="vi-text"><strong>Werbefrei kaufen</strong><small>Einmalig, für immer ohne Werbung</small></span>
           <span class="money-price" id="ad-buy-price" data-no-i18n></span>
         </button>
+        <button type="button" class="money-row" id="ad-extras">
+          <span class="vi-text"><strong>Extras 24 Stunden freischalten</strong><small>Graph als Bild, Verlauf exportieren und Farbthemen</small></span>
+        </button>
         <p class="setting-hint" id="ad-status" hidden></p>
+        <p class="setting-hint" id="ad-extras-status" hidden></p>
         <p class="legal-links">
           <button type="button" class="text-btn" id="ad-restore" hidden>Käufe wiederherstellen</button>
           <button type="button" class="text-btn" id="ad-privacy" hidden>Werbe-Einstellungen</button>

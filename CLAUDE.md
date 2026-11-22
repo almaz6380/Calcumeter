@@ -21,10 +21,13 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
   (fr/pl/sv group with a space), decimal-point languages (en ja ko zh) `1,234.5` and `log(8,2)`.
 - Widget/shortcut texts for Android and iOS: edit `tools/native-strings.json`, then `python3 tools/native-strings.py`
   (writes `res/values-*/widget_strings.xml`, the `L10n` tables in the Swift files and `CFBundleLocalizations`).
-- `native.js` – bridge to Capacitor (share, haptics, deep links `calcumeter://view/<view>` and `#<view>`,
-  `widgetData`). `money.js` – AdMob banner at the bottom of every view (calculator too since 11/2026, except phone landscape;
-  space is reserved via `--ad-h`, class `has-banner` on `<html>`) + rewarded video (24 h ad-free) +
-  RevenueCat `no_ads`; real ad unit ids are live (`adsTesting: false`). Both do nothing on the web.
+- `native.js` – bridge to Capacitor (share, `shareFile` via `@capacitor/filesystem` + Share for PNG/CSV, haptics,
+  deep links `calcumeter://view/<view>` and `#<view>`, `widgetData`). `money.js` – AdMob banner at the bottom of every view
+  (calculator too since 11/2026, except phone landscape; space is reserved via `--ad-h`, class `has-banner` on `<html>`)
+  + rare interstitial on view switch (`darfVollbild`, `ADMOB.interstitial` – empty = off) + rewarded video (24 h ad-free,
+  or 24 h extras, own timestamp `extrasUntil`) + RevenueCat `no_ads`; real banner/rewarded ids are live
+  (`adsTesting: false`). Extras (graph as PNG, history CSV export, palettes Ozean/Abendrot via `data-palette` on `<html>`)
+  go through `Money.mitExtras(fn)`: free with the purchase, 24 h after an extras video, and always on the web.
 - `privacy.html`, `imprint.html` + `assets/legal/` (de/en). `assets/fonts/` – Geist, served locally.
 - `sw.js` – **bump `CACHE` (`calcumeter-vNN`) on every web release** and list new files in `ASSETS`.
 - Store app: `package.json`, `capacitor.config.json` (`com.almaz6380.calcumeter`), `android/`, `ios/` (checked in;
@@ -71,12 +74,22 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 
 ## Owner preferences
 - Design matters: check visual changes with screenshots on phone portrait/landscape and desktop before shipping.
-- No full-screen ads. Since 22.11.2026 the owner wants the banner in the calculator view as well – it must never
-  cover keys and keeps a gap to the bottom key row (accidental taps on ads endanger the AdMob account).
+- Since 22.11.2026: rare full-screen ads (interstitial) only on a view switch, via `darfVollbild()` in `money.js`:
+  not before the 4th switch of a session, at most every 4 min, at most 3 per session, never in the first minute,
+  never when ad-free (purchase or 24-h video), and 4 min of rest after any rewarded video. Only shown if preloaded.
+  Never advertise full-screen ads in store texts. Extras can be unlocked by video (24 h) or the purchase.
+- The banner is also in the calculator view – it must never cover keys and keeps a gap to the bottom key row
+  (accidental taps on ads endanger the AdMob account).
 - iOS asks for tracking permission natively in `SceneDelegate.swift` (the plugin bridge does not show the dialog
   reliably); `money.js` only waits for the answer.
 
 ## Release state
+- **22.11.2026 (Abend), Zweig `claude/optimistic-darwin-k01rmb`, NICHT gebaut:** Version 1.3 (Android vc7) / iOS 1.2,
+  Web `calcumeter-v14`. Seltene Vollbildwerbung + Extras per Video (Graph als Bild, Verlauf-CSV, Themen Ozean/Abendrot),
+  neues Plugin `@capacitor/filesystem` (per `npx cap update` in Gradle/Package.swift eingetragen).
+  **Josef muss in AdMob je einen Interstitial-Block für iOS und Android anlegen** und die IDs in
+  `ADMOB.interstitial` (money.js) eintragen – solange leer, gibt es keine Vollbildwerbung (kein Fehler).
+  Store-Datenschutzangaben ändern sich nicht (dieselben AdMob-Daten). Rechtstexte erwähnen die Vollbildwerbung.
 - **22.11.2026 (später):** Bitte um Store-Bewertung (`review.js`, `@capacitor-community/in-app-review` 8.0.0):
   nach 10 Rechnungen an mindestens 3 Tagen, höchstens alle 90 Tage, nur nativ. Steckt in Android 1.2 (vc6);
   iOS bekommt sie erst mit der nächsten Version (1.1 war schon eingereicht). Web `calcumeter-v13`.
