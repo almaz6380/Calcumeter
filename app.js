@@ -238,6 +238,7 @@
     state.expr = show(value);
     state.justEvaluated = true;
     state.lastExpr = closed;
+    if (window.Review) window.Review.gerechnet();
     save();
     render();
     renderHistory();
