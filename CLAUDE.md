@@ -81,10 +81,9 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
   nach 10 Rechnungen an mindestens 3 Tagen, höchstens alle 90 Tage, nur nativ. Steckt in Android 1.2 (vc6);
   iOS bekommt sie erst mit der nächsten Version (1.1 war schon eingereicht). Web `calcumeter-v13`.
   **Android 1.2 (vc6) auf `production`, Edit `06246510643727956360` committet** (22.11.2026, gebaut lokal in der
-  Cloud-Umgebung „Fal-kie“, die Keystore und Play-Schlüssel als Umgebungsvariablen hat; die Repo-Secrets für
-  `android-release.yml` fehlen weiterhin).
+  Cloud-Umgebung „Fal-kie“, die Keystore und Play-Schlüssel als Umgebungsvariablen hat).
 - **22.11.2026:** Banner in the calculator view, native tracking prompt. Web `calcumeter-v12` pushed to `gh-pages`.
   **iOS 1.1 (build 16) submitted**, `WAITING_FOR_REVIEW` (`ios-release` run 45038700938, `ios-listing` run 45039772476);
   1.0 (build 15) was live before. Android: banner shipped with 1.2 (vc6), see the entry above (before that Play served
-  1.1 / vc5). The three repo secrets for `android-release.yml` exist since 22.11.2026 (test run 45062174496 built and
-  signed the AAB, upload skipped).
+  1.1 / vc5). The three repo secrets for `android-release.yml` exist and work since 22.11.2026 (run 45062174496 built and
+  signed; dry run 45064347023 got a Play edit and only failed on the already used versionCode 6).
