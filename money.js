@@ -2,7 +2,9 @@
  * Calcumeter – Werbung (AdMob) und Kauf „Werbefrei“ (RevenueCat), nur in der Store-App
  *
  * Web-App: beide Plugins fehlen, alles hier bleibt ohne Wirkung und der Menübereich versteckt.
- * Banner unten nur in Währung, Einheiten, Graph und Programmierer – im Rechner nie.
+ * Banner unten in allen Bereichen, auch im Rechner – dort aber nicht im Handy-Querformat,
+ * weil es zu viel Höhe kostete. Der Platz wird über --ad-h reserviert, Tasten verdeckt es nie.
+ * Keine Vollbildwerbung.
  * Ein freiwilliges Belohnungsvideo schaltet 24 Stunden werbefrei.
  *
  * Veröffentlichung: echte IDs hier und in android/app/src/main/res/values/strings.xml bzw.
@@ -24,7 +26,9 @@
     noAdsProduct: 'no_ads',
     rewardHours: 24,
   };
-  const BANNER_VIEWS = ['fx', 'units', 'graph', 'prog'];
+  const BANNER_VIEWS = ['calc', 'fx', 'units', 'graph', 'notes', 'prog'];
+  // Handy quer: Im Rechner füllen die Tasten die ganze Höhe – dort kein Banner.
+  const LANDSCAPE = global.matchMedia ? global.matchMedia('(orientation: landscape) and (max-height: 600px)') : null;
   const KEY = 'calcumeter.money';
 
   const N = global.Native || { isApp: false, plugins: {}, platform: 'web' };
@@ -44,6 +48,7 @@
   let product = null;
   let view = 'calc';
   let bannerState = 'none';   // none | shown | hidden
+  let bannerHeight = 0;       // zuletzt gemeldete Höhe, für resumeBanner
   let busy = false;
   let toast = () => {};
 
@@ -52,12 +57,29 @@
 
   function setAdHeight(px) {
     document.documentElement.style.setProperty('--ad-h', `${px}px`);
+    document.documentElement.classList.toggle('has-banner', px > 0);
     global.dispatchEvent(new Event('resize'));
+  }
+
+  function wantsBanner(v, landscapePhone) {
+    return BANNER_VIEWS.includes(v) && !(v === 'calc' && landscapePhone);
+  }
+
+  // Apples Tracking-Frage stellt die App nativ (SceneDelegate.swift), sobald sie aktiv ist:
+  // Über die Plugin-Brücke erscheint der Dialog nicht zuverlässig. Hier nur auf die Antwort warten.
+  async function waitForTracking(maxMs) {
+    const end = Date.now() + maxMs;
+    for (;;) {
+      const tr = await ADS.trackingAuthorizationStatus();
+      if (tr.status !== 'notDetermined') return true;
+      if (Date.now() >= end) return false;
+      await new Promise((r) => setTimeout(r, 300));
+    }
   }
 
   async function updateBanner() {
     if (!adsReady) return;
-    const want = BANNER_VIEWS.includes(view) && !adFree();
+    const want = wantsBanner(view, Boolean(LANDSCAPE && LANDSCAPE.matches)) && !adFree();
     try {
       if (want && bannerState === 'none') {
         await ADS.showBanner({
@@ -67,10 +89,12 @@
       } else if (want && bannerState === 'hidden') {
         await ADS.resumeBanner();
         bannerState = 'shown';
+        // resumeBanner meldet die Größe nicht erneut – ohne das läge das Banner über dem Inhalt
+        setAdHeight(bannerHeight);
       } else if (!want && bannerState === 'shown') {
+        setAdHeight(0);
         await ADS.hideBanner();
         bannerState = 'hidden';
-        setAdHeight(0);
       }
     } catch (_) {
       setAdHeight(0);
@@ -86,13 +110,16 @@
         if (info.isConsentFormAvailable && info.status === 'REQUIRED') await ADS.showConsentForm();
         privacyRequired = info.privacyOptionsRequirementStatus === 'REQUIRED';
         if (N.platform === 'ios') {
-          const tr = await ADS.trackingAuthorizationStatus();
-          if (tr.status === 'notDetermined') await ADS.requestTrackingAuthorization();
+          // Rückfall über das Plugin, falls der native Dialog (noch) nicht kam
+          if (!(await waitForTracking(6000))) await ADS.requestTrackingAuthorization();
         }
         await ADS.initialize({ initializeForTesting: MONEY.adsTesting });
         ADS.addListener('bannerAdSizeChanged', (size) => {
-          setAdHeight(bannerState === 'shown' && size && size.height ? size.height : 0);
+          bannerHeight = size && size.height ? size.height : 0;
+          setAdHeight(bannerState === 'shown' ? bannerHeight : 0);
         });
+        ADS.addListener('bannerAdFailedToLoad', () => { bannerHeight = 0; setAdHeight(0); });
+        if (LANDSCAPE) LANDSCAPE.addEventListener('change', updateBanner);
         adsReady = true;
       } catch (_) { /* ohne Werbung weiter */ }
     }
@@ -208,5 +235,5 @@
     $('ad-privacy').addEventListener('click', () => { if (ADS) ADS.showPrivacyOptionsForm().catch(() => {}); });
   }
 
-  global.Money = { MONEY, init, setView, renderMenu, wire, active: Boolean(ADS || IAP) };
+  global.Money = { MONEY, init, setView, renderMenu, wire, wantsBanner, active: Boolean(ADS || IAP) };
 })(typeof self !== 'undefined' ? self : this);
