@@ -32,8 +32,11 @@
   --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --gap: 12px;
-  --kh: clamp(54px, 9.4dvh, 84px);   /* Höhe Zifferntasten */
-  --fh: clamp(36px, 5.4dvh, 48px);   /* Höhe Funktionstasten */
+  /* Tastenhöhen rechnen mit der Höhe OHNE Werbebanner (--ad-h), sonst drückt das Banner
+     auf kleinen Handys die Anzeige weg. Ohne Banner sind es die alten Werte. */
+  --vh1: calc((100dvh - var(--ad-h, 0px)) / 100);
+  --kh: clamp(54px, calc(var(--vh1) * 9.4), 84px);   /* Höhe Zifferntasten */
+  --fh: clamp(36px, calc(var(--vh1) * 5.4), 48px);   /* Höhe Funktionstasten */
   --maxw: 520px;
   color-scheme: dark;
 }
@@ -155,6 +158,12 @@ select:focus-visible + *,
     max(16px, env(safe-area-inset-right))
     max(20px, env(safe-area-inset-bottom))
     max(16px, env(safe-area-inset-left));
+}
+
+/* Mit Banner: immer ein Abstand zwischen unterster Tastenreihe und Anzeige – ein Tipp auf „=“
+   darf nie auf der Werbung landen. Das Banner sitzt über der Gestenleiste. */
+html.has-banner .calculator {
+  padding-bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px));
 }
 
 .calculator > * {
@@ -566,7 +575,7 @@ select:focus-visible + *,
 .fx-li-name { color: var(--muted); margin-left: 6px; }
 .fx-li-val { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.pad.fxpad { --kh: clamp(48px, 7.4dvh, 66px); gap: 10px; }
+.pad.fxpad { --kh: clamp(48px, calc(var(--vh1) * 7.4), 66px); gap: 10px; }
 
 /* ---------- Verlauf ---------- */
 
@@ -1142,7 +1151,7 @@ select:focus-visible + *,
 
 .pad.prog {
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  grid-auto-rows: clamp(42px, 6.6dvh, 64px);
+  grid-auto-rows: clamp(42px, calc(var(--vh1) * 6.6), 64px);
   gap: 8px;
 }
 
