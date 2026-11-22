@@ -80,6 +80,9 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 - **22.11.2026 (später):** Bitte um Store-Bewertung (`review.js`, `@capacitor-community/in-app-review` 8.0.0):
   nach 10 Rechnungen an mindestens 3 Tagen, höchstens alle 90 Tage, nur nativ. Steckt in Android 1.2 (vc6);
   iOS bekommt sie erst mit der nächsten Version (1.1 war schon eingereicht). Web `calcumeter-v13`.
+  **Android 1.2 (vc6) auf `production`, Edit `06246510643727956360` committet** (22.11.2026, gebaut lokal in der
+  Cloud-Umgebung „Fal-kie“, die Keystore und Play-Schlüssel als Umgebungsvariablen hat; die Repo-Secrets für
+  `android-release.yml` fehlen weiterhin).
 - **22.11.2026:** Banner in the calculator view, native tracking prompt. Web `calcumeter-v12` pushed to `gh-pages`.
   **iOS 1.1 (build 16) submitted**, `WAITING_FOR_REVIEW` (`ios-release` run 45038700938, `ios-listing` run 45039772476);
   1.0 (build 15) was live before. **Android 1.2 (vc6) NOT built yet:** `android-release.yml` stops at "Secrets vorhanden?"
