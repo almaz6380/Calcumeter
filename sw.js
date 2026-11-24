@@ -1,5 +1,5 @@
 /* Offline-Unterstützung: Netzwerk zuerst, Cache als Rückfall. */
-const CACHE = 'calcumeter-v13';
+const CACHE = 'calcumeter-v14';
 const ASSETS = ['./', 'index.html', 'style.css', 'assets/fonts/fonts.css', 'assets/fonts/geist-latin.woff2', 'assets/fonts/geist-latin-ext.woff2', 'assets/fonts/geist-mono-latin.woff2', 'native.js', 'i18n.js', 'lang/es.js', 'lang/fr.js', 'lang/it.js', 'lang/pt.js', 'lang/tr.js', 'lang/pl.js', 'lang/nl.js', 'lang/sv.js', 'lang/da.js', 'lang/ja.js', 'lang/ko.js', 'lang/zh-Hans.js', 'lang/zh-Hant.js', 'calculator.js', 'keypad.js', 'currency.js', 'units.js', 'programmer.js', 'graph.js', 'notes.js', 'money.js', 'review.js', 'app.js', 'icons/icon-192.png', 'icons/apple-touch-icon.png', 'icons/favicon-48.png', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
