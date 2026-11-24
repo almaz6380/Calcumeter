@@ -98,6 +98,54 @@
   color-scheme: light;
 }
 
+/* ---------- Farbthemen (Extras, seit 1.3): data-palette auf <html>, je dunkel und hell ----------
+   Selektoren mit [data-palette] sind spezifischer als die Grundthemen oben, die hellen
+   Varianten (zusätzlich :not([data-theme="dark"]) bzw. [data-theme="light"]) noch einmal mehr. */
+:root[data-palette="ocean"] {
+  --ground: #0B1217; --panel: #0F171D; --raise: #142029; --raise-2: #24323D;
+  --key: #18252F; --key-util: #2A3A46; --key-op: #0F2A2E; --fn: #121C23; --line: #1A2730;
+  --text: #EEF6F8; --text-2: #C2D2D8; --muted: #86A0AA;
+  --accent: #4FD1C5; --accent-fill: #4FD1C5; --accent-hover: #7ADFD5; --accent-ink: #04201D;
+  --plot-1: #4FD1C5; --plot-2: #FFB547; --plot-3: #B9A2FF;
+}
+:root[data-palette="sunset"] {
+  --ground: #140F14; --panel: #19121A; --raise: #201722; --raise-2: #352838;
+  --key: #261C29; --key-util: #3C2E40; --key-op: #331C20; --fn: #1B141D; --line: #261D28;
+  --text: #F8F1F3; --text-2: #D8C9CF; --muted: #A493A0;
+  --accent: #FF8A65; --accent-fill: #FF8A65; --accent-hover: #FFA588; --accent-ink: #2A0F06;
+  --plot-1: #FF8A65; --plot-2: #FFD166; --plot-3: #C792EA;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-palette="ocean"]:not([data-theme="dark"]) {
+    --ground: #E8F0F2; --panel: #F4F8F9; --raise: #DAE5E8; --raise-2: #FFFFFF;
+    --key: #FFFFFF; --key-util: #D0DDE1; --key-op: #CDEFEB; --fn: #DDE7EA; --line: #CCD9DD;
+    --text: #10191D; --text-2: #33454C; --muted: #4E626A;
+    --accent: #006A61; --accent-fill: #4FD1C5; --accent-hover: #7ADFD5; --accent-ink: #04201D;
+    --plot-1: #00897B; --plot-2: #C77700; --plot-3: #6A4FD6;
+  }
+  :root[data-palette="sunset"]:not([data-theme="dark"]) {
+    --ground: #F5ECEA; --panel: #FBF6F4; --raise: #EBDFDC; --raise-2: #FFFFFF;
+    --key: #FFFFFF; --key-util: #E3D3CF; --key-op: #FFDCCF; --fn: #EDE2DF; --line: #E0D2CE;
+    --text: #1D1416; --text-2: #45363A; --muted: #6E5E65;
+    --accent: #B03E18; --accent-fill: #FF8A65; --accent-hover: #FFA588; --accent-ink: #2A0F06;
+    --plot-1: #D9541E; --plot-2: #B58200; --plot-3: #8E44AD;
+  }
+}
+:root[data-palette="ocean"][data-theme="light"] {
+  --ground: #E8F0F2; --panel: #F4F8F9; --raise: #DAE5E8; --raise-2: #FFFFFF;
+  --key: #FFFFFF; --key-util: #D0DDE1; --key-op: #CDEFEB; --fn: #DDE7EA; --line: #CCD9DD;
+  --text: #10191D; --text-2: #33454C; --muted: #4E626A;
+  --accent: #006A61; --accent-fill: #4FD1C5; --accent-hover: #7ADFD5; --accent-ink: #04201D;
+  --plot-1: #00897B; --plot-2: #C77700; --plot-3: #6A4FD6;
+}
+:root[data-palette="sunset"][data-theme="light"] {
+  --ground: #F5ECEA; --panel: #FBF6F4; --raise: #EBDFDC; --raise-2: #FFFFFF;
+  --key: #FFFFFF; --key-util: #E3D3CF; --key-op: #FFDCCF; --fn: #EDE2DF; --line: #E0D2CE;
+  --text: #1D1416; --text-2: #45363A; --muted: #6E5E65;
+  --accent: #B03E18; --accent-fill: #FF8A65; --accent-hover: #FFA588; --accent-ink: #2A0F06;
+  --plot-1: #D9541E; --plot-2: #B58200; --plot-3: #8E44AD;
+}
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -1332,3 +1380,11 @@ button.notes-res.total { color: var(--text); font-weight: 700; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* Extras: gesperrt tragen sie „· Video“ (Text) bzw. einen Punkt (Symbolknopf) */
+.lock-badge { font-weight: 400; color: var(--muted); white-space: nowrap; }
+.lock-badge:empty { display: none; }
+.extra-btn { position: relative; }
+.lock-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-fill); }
+.setting-wrap { flex-wrap: wrap; }
+.setting-wrap .seg { flex-wrap: wrap; }

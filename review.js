@@ -10,7 +10,7 @@
  *    oft wiederkommt, nutzt die App wirklich;
  *  - danach höchstens alle 90 Tage (eigene Bremse);
  *  - nur in der Store-App, im Browser gibt es keinen Store.
- * Vollbildwerbung gibt es in Calcumeter nicht, darauf muss nicht geachtet werden.
+ *  - nie direkt nach einer Vollbildwerbung oder einem Belohnungsvideo (seit 1.3, Money.vollbildGerade).
  */
 (function (global) {
   'use strict';
@@ -54,7 +54,8 @@
     stand.rechnungen += 1;
     const heute = tag(new Date(jetzt));
     if (!stand.tage.includes(heute)) stand.tage = stand.tage.concat(heute).slice(-AB_TAGEN);
-    const fragen = Boolean(plugin) && darfFragen(stand, jetzt);
+    const kurzNachWerbung = Boolean(global.Money && global.Money.vollbildGerade && global.Money.vollbildGerade());
+    const fragen = Boolean(plugin) && !kurzNachWerbung && darfFragen(stand, jetzt);
     if (fragen) stand.zuletzt = jetzt;
     try { localStorage.setItem(KEY, JSON.stringify(stand)); } catch (_) { /* dann nie */ }
     if (!fragen) return;

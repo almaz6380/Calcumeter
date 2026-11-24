@@ -318,7 +318,8 @@
 
   // ---------- Einstellungen ----------
 
-  const settings = { theme: 'auto', vibrate: true };
+  const settings = { theme: 'auto', palette: 'amber', vibrate: true };
+  const PALETTES = ['amber', 'ocean', 'sunset'];
   try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch (_) { /* Standard */ }
   if (settings.lang !== 'auto' && !I18n.LANGS.includes(settings.lang)) settings.lang = 'auto';
   I18n.setLang(settings.lang === 'auto' ? null : settings.lang);
@@ -335,12 +336,21 @@
     render();
     renderHistory();
     if (modules[state.view]) modules[state.view].show();
+    if (window.Money) updateExtras();
   }
 
   function applySettings() {
     const root = document.documentElement;
     if (settings.theme === 'light' || settings.theme === 'dark') root.dataset.theme = settings.theme;
     else delete root.dataset.theme;
+    // Farbthemen sind ein Extra: ohne Freischaltung gilt Bernstein, die Wahl bleibt gespeichert
+    if (!PALETTES.includes(settings.palette)) settings.palette = 'amber';
+    const palette = settings.palette !== 'amber' && window.Money.extrasFrei() ? settings.palette : 'amber';
+    if (palette === 'amber') delete root.dataset.palette;
+    else root.dataset.palette = palette;
+    document.querySelectorAll('[data-palette-choice]').forEach((b) => {
+      b.setAttribute('aria-checked', String(b.dataset.paletteChoice === palette));
+    });
     document.querySelectorAll('[data-theme-choice]').forEach((b) => {
       b.setAttribute('aria-checked', String(b.dataset.themeChoice === settings.theme));
     });
@@ -370,6 +380,63 @@
     refreshTexts(prev);
   });
 
+  // ---------- Extras (Graph als Bild, Verlauf exportieren, Farbthemen) ----------
+
+  // Gesperrte Extras tragen „· Video“; ein Tipp startet dann das Belohnungsvideo.
+  function updateExtras() {
+    const locked = !window.Money.extrasFrei();
+    document.querySelectorAll('.extra-btn .lock-badge').forEach((b) => { b.textContent = locked ? ` · ${t('Video')}` : ''; });
+    document.querySelectorAll('.extra-btn .lock-dot').forEach((b) => { b.hidden = !locked; });
+    const gs = $('#graph-share');
+    const label = t('Graph als Bild teilen') + (locked ? ` · ${t('Video')}` : '');
+    gs.setAttribute('aria-label', label);
+    gs.title = label;
+    $('#history-export').title = t('Verlauf exportieren') + (locked ? ` · ${t('Video')}` : '');
+    applySettings();
+  }
+
+  function shareResult(res) {
+    if (res === 'downloaded') toast(t('Heruntergeladen'));
+    else if (res === 'failed') toast(t('Teilen nicht möglich'));
+  }
+
+  // Ein CSV-Feld; Trennzeichen folgt der Sprache (Dezimalkomma → „;“)
+  function csvField(v, sep) {
+    const s = String(v);
+    return s.includes(sep) || /["\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function historyCsv() {
+    const sep = L().decimal === ',' ? ';' : ',';
+    const rows = [[t('Rechnung'), t('Ergebnis')]];
+    for (const h of state.history.slice().reverse()) {
+      const expr = convertExpr(h.expr, h.lang || 'de', I18n.getLang());
+      const res = typeof h.value === 'number' ? show(h.value).replace('−', '-') : h.result.replace('.', L().decimal);
+      rows.push([expr, res]);
+    }
+    return `\ufeff${rows.map((r) => r.map((c) => csvField(c, sep)).join(sep)).join('\r\n')}\r\n`;
+  }
+
+  $('#history-export').addEventListener('click', () => {
+    if (!state.history.length) { toast(t('Verlauf ist leer')); return; }
+    window.Money.mitExtras(async () => {
+      const blob = new Blob([historyCsv()], { type: 'text/csv;charset=utf-8' });
+      shareResult(await window.Native.shareFile({ blob, filename: 'calcumeter-history.csv', title: t('Verlauf') }));
+    });
+  });
+
+  $('#graph-share').addEventListener('click', () => {
+    if (!modules.graph) return;
+    window.Money.mitExtras(async () => {
+      try {
+        const blob = await modules.graph.bild();
+        shareResult(await window.Native.shareFile({ blob, filename: 'calcumeter-graph.png', title: t('Graph') }));
+      } catch (_) {
+        toast(t('Teilen nicht möglich'));
+      }
+    });
+  });
+
   function openMenu() {
     window.Money.renderMenu();
     els.menu.showModal();
@@ -393,6 +460,13 @@
     if (theme) {
       settings.theme = theme.dataset.themeChoice;
       applySettings();
+    }
+    const palette = e.target.closest('[data-palette-choice]');
+    if (palette) {
+      const choice = palette.dataset.paletteChoice;
+      const set = () => { settings.palette = choice; applySettings(); };
+      if (choice === 'amber') set();
+      else window.Money.mitExtras(set);
     }
     if (e.target.closest('#set-vibrate')) {
       settings.vibrate = !settings.vibrate;
@@ -675,7 +749,7 @@
   applySettings();
   refreshTexts();
   window.Money.wire();
-  window.Money.init({ toast });
+  window.Money.init({ toast, onExtrasChange: updateExtras });
   render();
   renderHistory();
   setView(state.view);
