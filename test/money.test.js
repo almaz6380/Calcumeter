@@ -48,8 +48,9 @@ test('werbefrei (Kauf oder 24-h-Video): nie Vollbild', () => {
   assert.equal(darfVollbild({ ...basis, werbefrei: true }), false);
 });
 
-test('Interstitial-Blöcke: leer heißt aus, Test-IDs von Google', () => {
-  assert.deepEqual(Money.ADMOB.interstitial, { ios: '', android: '' });
+test('Interstitial-Blöcke: echte IDs je Plattform, Test-IDs von Google', () => {
+  // Echte Blöcke tragen Josefs Publisher-ID, nie Googles Beispiel-ID (sonst stumm keine Einnahmen).
+  for (const id of Object.values(Money.ADMOB.interstitial)) assert.match(id, /^ca-app-pub-8860791993288062\/\d+$/);
   assert.equal(Money.ADMOB.testInterstitial.ios, 'ca-app-pub-3940256099942544/4411468910');
   assert.equal(Money.ADMOB.testInterstitial.android, 'ca-app-pub-3940256099942544/1033173712');
 });

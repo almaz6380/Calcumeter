@@ -32,7 +32,7 @@
   };
   // Vollbild (Interstitial). Leer = aus. Echte IDs liefert AdMob (eigene Blöcke je Plattform).
   const ADMOB = {
-    interstitial: { ios: '', android: '' },
+    interstitial: { ios: 'ca-app-pub-8860791993288062/3523234928', android: 'ca-app-pub-8860791993288062/8041064436' },
     // Googles Beispiel-Blöcke, nur solange adsTesting true ist
     testInterstitial: { ios: 'ca-app-pub-3940256099942544/4411468910', android: 'ca-app-pub-3940256099942544/1033173712' },
   };

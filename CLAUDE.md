@@ -87,8 +87,8 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 - **22.11.2026 (Abend), Zweig `claude/optimistic-darwin-k01rmb`, NICHT gebaut:** Version 1.3 (Android vc7) / iOS 1.2,
   Web `calcumeter-v14`. Seltene Vollbildwerbung + Extras per Video (Graph als Bild, Verlauf-CSV, Themen Ozean/Abendrot),
   neues Plugin `@capacitor/filesystem` (per `npx cap update` in Gradle/Package.swift eingetragen).
-  **Josef muss in AdMob je einen Interstitial-Block für iOS und Android anlegen** und die IDs in
-  `ADMOB.interstitial` (money.js) eintragen – solange leer, gibt es keine Vollbildwerbung (kein Fehler).
+  Interstitial-Blöcke seit 24.11.2026 in `ADMOB.interstitial` (money.js): iOS `…/3523234928`,
+  Android `…/8041064436` (leer = Vollbild aus, kein Fehler).
   Store-Datenschutzangaben ändern sich nicht (dieselben AdMob-Daten). Rechtstexte erwähnen die Vollbildwerbung.
 - **22.11.2026 (später):** Bitte um Store-Bewertung (`review.js`, `@capacitor-community/in-app-review` 8.0.0):
   nach 10 Rechnungen an mindestens 3 Tagen, höchstens alle 90 Tage, nur nativ. Steckt in Android 1.2 (vc6);
