@@ -87,7 +87,7 @@ The owner talks German: answer in German. UI in 15 languages (German source, Eng
 - **24.11.2026 ausgeliefert:** Android **1.3 (vc7) auf `production`, eingereicht** (`android-release` 45401005104,
   Edit `05191106771761559997`, 15 Versionshinweise). iOS **1.2 (Build 17) eingereicht**, `WAITING_FOR_REVIEW`
   (`ios-release` 45401010879, `ios-listing` 45402219022 mit `new_version 1.2`, `build 17`, `submit`). iOS 1.1 war
-  vorher im Store. Web (`gh-pages`, `calcumeter-v14`) und Merge nach `master` noch offen.
+  vorher im Store. Web `calcumeter-v14` auf `gh-pages` (40804d3), Zweig per PR #5 nach `master` gemergt.
 - **22.11.2026 (Abend), Zweig `claude/optimistic-darwin-k01rmb`:** Version 1.3 (Android vc7) / iOS 1.2,
   Web `calcumeter-v14`. Seltene Vollbildwerbung + Extras per Video (Graph als Bild, Verlauf-CSV, Themen Ozean/Abendrot),
   neues Plugin `@capacitor/filesystem` (per `npx cap update` in Gradle/Package.swift eingetragen).
